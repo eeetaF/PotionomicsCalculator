@@ -9,7 +9,7 @@ func SortSearchResult(sr *[]SearchResult, topResultsToShow uint16) {
 	sort.Slice(*sr, func(i, j int) bool {
 		return (*sr)[i].TotalMagimints > (*sr)[j].TotalMagimints
 	})
-	*sr = (*sr)[:topResultsToShow]
+	*sr = (*sr)[:min(int(topResultsToShow), len(*sr))]
 }
 func PrintSearchResult(sr *[]SearchResult) {
 	var s string
