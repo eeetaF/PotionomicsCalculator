@@ -5,15 +5,16 @@ import (
 	"sort"
 )
 
-func SortSearchResult(sr *[]SearchResult) {
+func SortSearchResult(sr *[]SearchResult, topResultsToShow uint16) {
 	sort.Slice(*sr, func(i, j int) bool {
 		return (*sr)[i].TotalMagimints > (*sr)[j].TotalMagimints
 	})
+	*sr = (*sr)[:topResultsToShow]
 }
 func PrintSearchResult(sr *[]SearchResult) {
 	var s string
 	for _, searchResult := range *sr {
-		s += fmt.Sprintf("%d %d %s", searchResult.NumberIngreds, searchResult.TotalMagimints, searchResult.ResultingPotion.Name)
+		s += fmt.Sprintf("%s, ingredients: %d, magimints: %d", searchResult.ResultingPotion.Name, searchResult.NumberIngreds, searchResult.TotalMagimints)
 		if len(searchResult.Traits) != 0 {
 			s += "\n\t"
 		}
@@ -25,9 +26,12 @@ func PrintSearchResult(sr *[]SearchResult) {
 			}
 		}
 		for ingName, ingCount := range searchResult.Ingredients {
-			s += fmt.Sprintf("\n\tx%d: %s", ingCount, ingName)
+			mags := ingredientsMap[ingName].Magimints
+			s += fmt.Sprintf("\n\tx%d: [%d, %d, %d, %d, %d] %s",
+				ingCount, mags[0], mags[1], mags[2], mags[3], mags[4], ingName)
 		}
 		s += "\n"
 	}
+	s += "\n"
 	PrintWithBufio(s)
 }
