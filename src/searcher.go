@@ -125,8 +125,9 @@ func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint
 				numIngreds:     currentUnit.numIngreds,
 				numMagimints:   currentUnit.numMagimints,
 				minIngredToUse: currentUnit.minIngredToUse,
-				ingredients:    currentUnit.ingredients,
+				ingredients:    make([]nameWithQuantity, len(currentUnit.ingredients)),
 			}
+			copy(newUnit.ingredients, currentUnit.ingredients)
 			newUnit.minIngredToUse[magIdx] = i
 			addIngred(&ingrInfo, &newUnit, j)
 
