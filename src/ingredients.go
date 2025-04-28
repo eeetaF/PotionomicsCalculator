@@ -1,0 +1,203 @@
+package src
+
+type Ingredient struct {
+	Magimints [5]uint16
+	Category  IngredientCategory
+	Name      string
+	Price     int
+	Traits    []TraitStruct
+}
+
+type IngredientSearch struct {
+	Magimints [5]uint16
+	Name      string
+	Traits    []TraitStruct
+}
+
+var Ingredients = []Ingredient{
+	// Slime
+	{[5]uint16{0, 0, 6, 0, 0}, Slime, "Sack of Slime", 7, []TraitStruct{}},
+	{[5]uint16{3, 3, 3, 0, 0}, Slime, "Cubic Ooze", 16, []TraitStruct{}},
+	{[5]uint16{0, 0, 18, 0, 0}, Slime, "Sack of Hive Slime", 21, []TraitStruct{}},
+	{[5]uint16{30, 0, 0, 0, 0}, Slime, "Antlered Jelly", 28, []TraitStruct{
+		{Sensation, false}, {Visual, true}}},
+	{[5]uint16{9, 9, 12, 12, 0}, Slime, "Bubble Ooze", 60, []TraitStruct{}},
+	{[5]uint16{15, 15, 15, 15, 0}, Slime, "Copper Dollop", 95, []TraitStruct{}},
+
+	// Plant
+	{[5]uint16{0, 6, 0, 0, 0}, Plant, "Mandrake Root", 6, []TraitStruct{}},
+	{[5]uint16{0, 27, 0, 0, 0}, Plant, "Bog Beet", 27, []TraitStruct{
+		{Taste, false}, {Sound, true}}},
+	{[5]uint16{0, 30, 0, 0, 0}, Plant, "Reef Radish", 32, []TraitStruct{
+		{Taste, false}, {Sound, true}}},
+	{[5]uint16{0, 30, 0, 0, 0}, Plant, "Mandragon Root", 34, []TraitStruct{}},
+	{[5]uint16{0, 32, 0, 32, 0}, Plant, "Daredevil Pepper", 90, []TraitStruct{}},
+	{[5]uint16{20, 20, 15, 0, 15}, Plant, "Squid Vine", 135, []TraitStruct{}},
+	{[5]uint16{16, 0, 40, 0, 40}, Plant, "Acid Pitfall Plant", 145, []TraitStruct{}},
+
+	// Flower
+	{[5]uint16{4, 0, 0, 0, 0}, Flower, "Fairy Flower Bulb", 14, []TraitStruct{
+		{Aroma, true}}},
+	{[5]uint16{0, 0, 0, 12, 0}, Flower, "Wraith Orchid", 19, []TraitStruct{}},
+	{[5]uint16{12, 0, 0, 0, 0}, Flower, "Fairy Flower Bud", 23, []TraitStruct{
+		{Aroma, true}}},
+	{[5]uint16{18, 0, 0, 6, 0}, Flower, "Ghostlight Bloom", 28, []TraitStruct{}},
+	{[5]uint16{20, 0, 0, 0, 0}, Flower, "Fairy Flower Bloom", 35, []TraitStruct{
+		{Aroma, true}}},
+	{[5]uint16{40, 0, 0, 20, 0}, Flower, "Fire Flower", 55, []TraitStruct{
+		{Aroma, false}}},
+
+	// Fruit
+	{[5]uint16{6, 0, 0, 0, 0}, Fruit, "Feyberry", 4, []TraitStruct{}},
+	{[5]uint16{18, 0, 0, 0, 0}, Fruit, "Puckberry", 16, []TraitStruct{}},
+	{[5]uint16{30, 0, 0, 0, 0}, Fruit, "Bogeyberry", 30, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 40, 0}, Fruit, "Saltwatermelon", 44, []TraitStruct{
+		{Visual, false}}},
+	{[5]uint16{0, 10, 30, 0, 0}, Fruit, "Phantom Pomme", 64, []TraitStruct{
+		{Taste, true}, {Sound, false}}},
+	{[5]uint16{0, 0, 0, 64, 0}, Fruit, "Rottermelon", 68, []TraitStruct{
+		{Visual, false}}},
+	{[5]uint16{48, 0, 48, 24, 24}, Fruit, "Charredonnay", 260, []TraitStruct{
+		{Taste, false}}},
+
+	// Fungus
+	{[5]uint16{0, 4, 0, 0, 0}, Fungus, "Impstool Mushroom", 17, []TraitStruct{
+		{Sensation, true}}},
+	{[5]uint16{0, 12, 0, 0, 0}, Fungus, "Trollstool Mushroom", 20, []TraitStruct{
+		{Sensation, true}}},
+	{[5]uint16{0, 18, 0, 6, 0}, Fungus, "Miasma Spore", 30, []TraitStruct{}},
+	{[5]uint16{0, 20, 0, 0, 0}, Fungus, "Giantstool Mushroom", 40, []TraitStruct{
+		{Sensation, true}}},
+	{[5]uint16{16, 0, 0, 0, 48}, Fungus, "Creeping Mildew", 92, []TraitStruct{}},
+
+	// Bug
+	{[5]uint16{0, 0, 4, 0, 0}, Bug, "Rotfly Larva", 10, []TraitStruct{
+		{Taste, true}}},
+	{[5]uint16{0, 0, 12, 0, 0}, Bug, "Rotfly Cocoon", 25, []TraitStruct{
+		{Taste, true}}},
+	{[5]uint16{12, 6, 0, 0, 0}, Bug, "Sphinx Flea", 35, []TraitStruct{
+		{Sensation, true}}},
+	{[5]uint16{0, 0, 20, 0, 0}, Bug, "Rotfly Adult", 38, []TraitStruct{
+		{Taste, true}}},
+	{[5]uint16{10, 20, 0, 0, 0}, Bug, "Selkie Lice", 50, []TraitStruct{
+		{Sensation, true}}},
+	{[5]uint16{0, 0, 0, 0, 30}, Bug, "Static Spiderling", 50, []TraitStruct{
+		{Visual, false}, {Sound, true}}},
+	{[5]uint16{0, 0, 32, 0, 0}, Bug, "Rotfly Matriarch", 65, []TraitStruct{
+		{Taste, true}}},
+	{[5]uint16{96, 48, 0, 0, 0}, Bug, "Pegasus Mite", 134, []TraitStruct{
+		{Sensation, false}, {Sound, false}}},
+
+	// Fish
+	{[5]uint16{8, 0, 0, 0, 0}, Fish, "River Calamari", 5, []TraitStruct{
+		{Sensation, false}}},
+	{[5]uint16{24, 0, 0, 0, 0}, Fish, "Swamp Octopus", 18, []TraitStruct{
+		{Sensation, false}}},
+	{[5]uint16{12, 0, 0, 6, 0}, Fish, "Swamp Fish", 22, []TraitStruct{}},
+	{[5]uint16{6, 0, 12, 0, 0}, Fish, "Mud Shrimp", 26, []TraitStruct{
+		{Aroma, true}}},
+	{[5]uint16{40, 0, 0, 0, 0}, Fish, "Drarf Kraken", 30, []TraitStruct{
+		{Sensation, false}}},
+	{[5]uint16{10, 10, 10, 0, 0}, Fish, "Electrocution Eel", 45, []TraitStruct{
+		{Visual, true}}},
+
+	// Flesh
+	{[5]uint16{0, 8, 0, 0, 0}, Flesh, "Serpent's Slippery Tongue", 6, []TraitStruct{
+		{Aroma, false}}},
+	{[5]uint16{0, 24, 0, 0, 0}, Flesh, "Salamander's Fiery Tongue", 22, []TraitStruct{
+		{Aroma, false}}},
+	{[5]uint16{0, 40, 0, 0, 0}, Flesh, "Banshee's Bloody Tongue", 32, []TraitStruct{
+		{Aroma, false}}},
+	{[5]uint16{0, 0, 24, 12, 0}, Flesh, "Frog Leg", 33, []TraitStruct{
+		{Visual, false}}},
+	{[5]uint16{0, 0, 30, 0, 10}, Flesh, "Thunderbird's Molted Feather", 60, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 48, 16}, Flesh, "Lamia's Shed Scales", 110, []TraitStruct{}},
+
+	// Bone
+	{[5]uint16{0, 0, 8, 0, 0}, Bone, "Unicorn Horn", 6, []TraitStruct{
+		{Taste, false}}},
+	{[5]uint16{0, 0, 24, 0, 0}, Bone, "Qilin's Tri-horn", 18, []TraitStruct{
+		{Taste, false}}},
+	{[5]uint16{6, 0, 12, 0, 0}, Bone, "Crocodile Tooth", 20, []TraitStruct{}},
+	{[5]uint16{9, 9, 9, 0, 0}, Bone, "Hydra Vertebra", 35, []TraitStruct{}},
+	{[5]uint16{0, 0, 40, 0, 0}, Bone, "Spriggan Antler", 38, []TraitStruct{
+		{Taste, false}}},
+	{[5]uint16{0, 0, 64, 0, 0}, Bone, "Silver Stag Antler", 72, []TraitStruct{
+		{Taste, false}}},
+	{[5]uint16{0, 48, 0, 0, 16}, Bone, "Naga's Fang", 98, []TraitStruct{
+		{Sensation, false}, {Sound, true}}},
+
+	// Mineral
+	{[5]uint16{4, 4, 0, 0, 0}, Mineral, "River-Pixie's Shell", 11, []TraitStruct{}},
+	{[5]uint16{12, 12, 0, 0, 0}, Mineral, "Leech Snail's Shell", 26, []TraitStruct{}},
+	{[5]uint16{18, 12, 0, 10, 0}, Mineral, "Golemite", 38, []TraitStruct{}},
+	{[5]uint16{20, 20, 0, 0, 0}, Mineral, "Slapping Turtle's Shell", 46, []TraitStruct{}},
+	{[5]uint16{30, 0, 0, 0, 10}, Mineral, "Sea Salt", 55, []TraitStruct{}},
+	{[5]uint16{30, 20, 0, 0, 10}, Mineral, "Abyssalite", 79, []TraitStruct{}},
+
+	// Essence
+	{[5]uint16{4, 0, 4, 0, 0}, Essence, "Kappa Pheromones", 13, []TraitStruct{}},
+	{[5]uint16{12, 0, 12, 0, 0}, Essence, "Warg Pheromones", 26, []TraitStruct{}},
+	{[5]uint16{20, 0, 20, 0, 0}, Essence, "Nessie Pheromones", 50, []TraitStruct{}},
+	{[5]uint16{0, 10, 12, 18, 0}, Essence, "Raven's Shadow", 52, []TraitStruct{}},
+	{[5]uint16{0, 0, 30, 10, 0}, Essence, "Raiju Droppings", 55, []TraitStruct{}},
+	{[5]uint16{0, 0, 30, 20, 10}, Essence, "Dropspider's Shadow", 90, []TraitStruct{}},
+	{[5]uint16{0, 48, 32, 16, 0}, Essence, "Bioplasm", 125, []TraitStruct{
+		{Visual, false}, {Sound, true}}},
+
+	// Gem
+	{[5]uint16{0, 4, 4, 0, 0}, Gem, "Pixiedust Diamond", 14, []TraitStruct{}},
+	{[5]uint16{0, 12, 0, 0, 0}, Gem, "Murkwater Pearl", 27, []TraitStruct{
+		{Visual, true}}},
+	{[5]uint16{0, 12, 12, 0, 0}, Gem, "Golem's-Eye Diamond", 28, []TraitStruct{}},
+	{[5]uint16{0, 20, 20, 0, 0}, Gem, "Spider's-Bait Diamond", 50, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 32, 0}, Gem, "Lustrous Pearl", 60, []TraitStruct{
+		{Visual, true}}},
+	{[5]uint16{30, 10, 20, 0, 0}, Gem, "Thunder Quartz", 72, []TraitStruct{}},
+	{[5]uint16{64, 48, 0, 32, 0}, Gem, "Poison Quartz", 185, []TraitStruct{
+		{Sound, false}}},
+
+	// Ore
+	{[5]uint16{0, 0, 0, 18, 0}, Ore, "Glass Ore", 24, []TraitStruct{}},
+	{[5]uint16{0, 12, 0, 0, 0}, Ore, "Desert Metal", 25, []TraitStruct{
+		{Sensation, true}}},
+	{[5]uint16{0, 0, 0, 30, 0}, Ore, "Fulgurite Ore", 40, []TraitStruct{}},
+	{[5]uint16{30, 10, 0, 0, 20}, Ore, "Malachite Ore", 93, []TraitStruct{}},
+
+	// Pure Mana
+	{[5]uint16{15, 15, 15, 15, 15}, PureMana, "Mote of Mana", 130, []TraitStruct{}},
+}
+
+type IngredientCategory byte
+
+const (
+	Slime IngredientCategory = iota
+	Plant
+	Flower
+	Fruit
+	Fungus
+	Bug
+	Fish
+	Flesh
+	Bone
+	Mineral
+	Essence
+	Gem
+	Ore
+	PureMana
+)
+
+type TraitStruct struct {
+	Trait  TraitType
+	IsGood bool
+}
+
+type TraitType byte
+
+const (
+	Taste TraitType = iota
+	Sensation
+	Aroma
+	Visual
+	Sound
+)
