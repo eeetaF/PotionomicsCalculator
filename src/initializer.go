@@ -7,6 +7,7 @@ import (
 
 var ingredientsMap map[string]Ingredient
 var potionsMap map[[5]uint16]Potion
+var potionsMapByName map[string]Potion
 
 var In *bufio.Reader
 var Out *bufio.Writer
@@ -21,6 +22,7 @@ func Initialize() {
 
 	for _, pot := range Potions {
 		potionsMap[pot.Magimints] = pot
+		potionsMapByName[pot.Name] = pot
 	}
 }
 

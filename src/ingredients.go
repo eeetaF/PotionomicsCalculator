@@ -194,6 +194,22 @@ type TraitStruct struct {
 
 type TraitType byte
 
+func (tt *TraitType) String() string {
+	switch *tt {
+	case Taste:
+		return "Taste"
+	case Sensation:
+		return "Sensation"
+	case Aroma:
+		return "Aroma"
+	case Visual:
+		return "Visual"
+	case Sound:
+		return "Sound"
+	}
+	return ""
+}
+
 const (
 	Taste TraitType = iota
 	Sensation
