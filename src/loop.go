@@ -28,7 +28,7 @@ func MainLoop() {
 			neededTraits = append(neededTraits, Sound)
 		}
 
-		searchResult := SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr, desiredPotion, &neededTraits)
+		searchResult := SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr, topResultsToShow, desiredPotion, &neededTraits)
 		SortAndFilterSearchResult(searchResult, topResultsToShow)
 		PrintSearchResult(searchResult)
 		run(searchResult)

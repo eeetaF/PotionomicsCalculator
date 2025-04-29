@@ -20,7 +20,7 @@ type SearchResult struct {
 var stack []searchUnit
 var stackMu sync.Mutex
 
-func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desiredPotion string, neededTraits *[]TraitType) *[]SearchResult {
+func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr, topResultsToShow uint16, desiredPotion string, neededTraits *[]TraitType) *[]SearchResult {
 	var neededTraitsArr [5]bool
 	for _, trait := range *neededTraits {
 		neededTraitsArr[trait] = true
@@ -34,7 +34,6 @@ func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desi
 
 	start := time.Now()
 
-	// Инициализация начального стека
 	if pt, ok := potionsMapByName[desiredPotion]; ok {
 		wg.Add(1)
 		stack = append(stack, searchUnit{desiredPotion: pt.Magimints})
@@ -48,6 +47,8 @@ func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desi
 	var mu sync.Mutex
 
 	numWorkers := runtime.NumCPU()
+	workersFinished := make(chan struct{}, numWorkers)
+	bestResultChannel := make(chan struct{}, numWorkers)
 
 	ctx, cancelFn := context.WithCancel(context.Background())
 	for w := 0; w < numWorkers; w++ {
@@ -55,6 +56,7 @@ func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desi
 			for {
 				select {
 				case <-ctx.Done():
+					workersFinished <- struct{}{}
 					return
 				default:
 					stackMu.Lock()
@@ -65,21 +67,48 @@ func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desi
 					currentUnit := stack[len(stack)-1]
 					stack = stack[:len(stack)-1]
 					stackMu.Unlock()
-					processUnit(currentUnit, minMags, maxMags, minIngr, maxIngr, &searchResult, &mu, &wg, &localIngreds)
+					processUnit(currentUnit, minMags, maxMags, minIngr, maxIngr, &searchResult, &mu, &wg, &localIngreds, bestResultChannel)
 				}
 			}
 		}()
 	}
 
-	wg.Wait()
-	cancelFn()
+	go func() {
+		wg.Wait()
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			cancelFn()
+		}
+	}()
+	var counter uint16
+	for {
+		select {
+		case <-bestResultChannel:
+			counter++
+			if counter == topResultsToShow {
+				cancelFn()
+				for i := 0; i < numWorkers; i++ { // wait for all workers to finish
+					<-workersFinished
+				}
+				for range len(stack) { // to not block upper goroutine
+					wg.Done()
+				}
+				goto exitFor
+			}
+		case <-ctx.Done():
+			goto exitFor
+		}
+	}
+exitFor:
 	elapsed := time.Since(start)
 	fmt.Println(elapsed)
 
 	return &searchResult
 }
 
-func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint16, searchResult *[]SearchResult, mu *sync.Mutex, wg *sync.WaitGroup, localIngreds *[5][]NameWithMags) {
+func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint16, searchResult *[]SearchResult, mu *sync.Mutex, wg *sync.WaitGroup, localIngreds *[5][]NameWithMags, bestResultChannel chan struct{}) {
 	defer wg.Done()
 	var i, j uint16
 
@@ -107,6 +136,9 @@ func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint
 		mu.Lock()
 		*searchResult = append(*searchResult, sr)
 		mu.Unlock()
+		if maxMags == currentUnit.numMagimints && maxIngr == currentUnit.numIngreds {
+			bestResultChannel <- struct{}{}
+		}
 	}
 
 	numIngredsToAdd := maxIngr - currentUnit.numIngreds
