@@ -55,6 +55,59 @@ func drawRect(dst *ebiten.Image, x, y, w, h int, col color.Color) {
 	dst.DrawImage(rect, op)
 }
 
+func drawRoundedRect(dst *ebiten.Image, x, y, w, h, r int, col color.Color) {
+	// Center rectangle
+	rect := ebiten.NewImage(w-2*r, h)
+	rect.Fill(col)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(x+r), float64(y))
+	dst.DrawImage(rect, op)
+	// Side rectangles
+	rectV := ebiten.NewImage(r, h-2*r)
+	rectV.Fill(col)
+	op1 := &ebiten.DrawImageOptions{}
+	op1.GeoM.Translate(float64(x), float64(y+r))
+	dst.DrawImage(rectV, op1)
+	op2 := &ebiten.DrawImageOptions{}
+	op2.GeoM.Translate(float64(x+w-r), float64(y+r))
+	dst.DrawImage(rectV, op2)
+	// Four corners (circles)
+	circ := ebiten.NewImage(r*2, r*2)
+	for cy := 0; cy < r*2; cy++ {
+		for cx := 0; cx < r*2; cx++ {
+			dx := cx - r
+			dy := cy - r
+			if dx*dx+dy*dy <= r*r {
+				circ.Set(cx, cy, col)
+			}
+		}
+	}
+	// Top-left
+	opTL := &ebiten.DrawImageOptions{}
+	geoTL := ebiten.GeoM{}
+	geoTL.Translate(float64(x), float64(y))
+	opTL.GeoM = geoTL
+	dst.DrawImage(circ, opTL)
+	// Top-right
+	opTR := &ebiten.DrawImageOptions{}
+	geoTR := ebiten.GeoM{}
+	geoTR.Translate(float64(x+w-2*r), float64(y))
+	opTR.GeoM = geoTR
+	dst.DrawImage(circ, opTR)
+	// Bottom-left
+	opBL := &ebiten.DrawImageOptions{}
+	geoBL := ebiten.GeoM{}
+	geoBL.Translate(float64(x), float64(y+h-2*r))
+	opBL.GeoM = geoBL
+	dst.DrawImage(circ, opBL)
+	// Bottom-right
+	opBR := &ebiten.DrawImageOptions{}
+	geoBR := ebiten.GeoM{}
+	geoBR.Translate(float64(x+w-2*r), float64(y+h-2*r))
+	opBR.GeoM = geoBR
+	dst.DrawImage(circ, opBR)
+}
+
 type Game struct {
 	sprites     map[string]*ebiten.Image
 	keys        []string // To keep order
@@ -103,25 +156,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				infoX := int(x) + 100 + 10
 				infoY := int(y) + 10
 
-				// Calculate block height for background
-				blockW := 320
-				blockH := 36 + 18 + 18 + len(sr.Traits)*20 + 10
-				bgCol := color.RGBA{0, 0, 0, 128}
-				drawRect(g.staticImage, infoX-8, infoY-8, blockW, blockH, bgCol)
+				// Magimints (smaller font)
+				drawTextWithOutline(g.staticImage, fmt.Sprintf("M: %d", sr.TotalMagimints), fontFaceSmall, infoX, infoY, color.White, color.Black, 2)
 
-				// Magimints
-				drawTextWithOutline(g.staticImage, fmt.Sprintf("M: %d", sr.TotalMagimints), fontFaceMain, infoX, infoY, color.White, color.Black, 2)
+				// Ingredients (smaller font)
+				infoY2 := infoY + 18
+				drawTextWithOutline(g.staticImage, fmt.Sprintf("I: %d", sr.NumberIngreds), fontFaceSmall, infoX, infoY2, color.White, color.Black, 2)
 
-				// Ingredients
-				infoY2 := infoY + 30
-				drawTextWithOutline(g.staticImage, fmt.Sprintf("I: %d", sr.NumberIngreds), fontFaceMain, infoX, infoY2, color.White, color.Black, 2)
-
-				// Traits heading
-				traitsY := infoY2 + 28
-				drawTextWithOutline(g.staticImage, "Traits:", fontFaceMain, infoX, traitsY, color.White, color.Black, 2)
-
-				// Each trait on a new line, colored
-				traitLineY := traitsY + 24
+				// Each trait on a new line, colored, smaller font
+				traitLineY := infoY2 + 18
 				for _, t := range sr.Traits {
 					traitLabel := ""
 					traitColor := color.RGBA{200, 255, 200, 255}
@@ -133,25 +176,48 @@ func (g *Game) Draw(screen *ebiten.Image) {
 						traitColor = color.RGBA{255, 80, 80, 255}
 					}
 					traitLabel += t.Trait.String()
-					drawTextWithOutline(g.staticImage, traitLabel, fontFaceMain, infoX+16, traitLineY, traitColor, color.Black, 2)
-					traitLineY += 24
+					drawTextWithOutline(g.staticImage, traitLabel, fontFaceSmall, infoX+12, traitLineY, traitColor, color.Black, 2)
+					traitLineY += 18
 				}
 
 				// Draw ingredients as before, but quantity larger and more visible
-				ingrX := infoX + blockW + 16
+				ingrX := infoX + 120
 				for ingrKey, qty := range sr.Ingredients {
 					ingrImg, ok := g.sprites[ingrKey]
-					if !ok {
-						continue
-					}
 					op := &ebiten.DrawImageOptions{}
 					op.GeoM.Translate(float64(ingrX), y)
-					g.staticImage.DrawImage(ingrImg, op)
+					if ok {
+						g.staticImage.DrawImage(ingrImg, op)
+					} else {
+						// Draw placeholder: gray circle with ?
+						ph := ebiten.NewImage(100, 100)
+						// Fill with gray
+						for py := 0; py < 100; py++ {
+							for px := 0; px < 100; px++ {
+								dx := px - 50
+								dy := py - 50
+								if dx*dx+dy*dy <= 50*50 {
+									ph.Set(px, py, color.RGBA{180, 180, 180, 255})
+								}
+							}
+						}
+						g.staticImage.DrawImage(ph, op)
+						// Draw ? in the center
+						qW := text.BoundString(fontFaceLarge, "?").Dx()
+						qH := text.BoundString(fontFaceLarge, "?").Dy()
+						qx := ingrX + 50 - qW/2
+						qy := int(y) + 50 + qH/2
+						drawTextWithOutline(g.staticImage, "?", fontFaceLarge, qx, qy, color.Black, color.White, 2)
+					}
 					label := ingrKey
-					labelWidth := text.BoundString(fontFaceSmall, label).Dx()
-					labelX := ingrX + 50 - labelWidth/2
+					// Split label into lines of max 12 chars, word-aware
+					labelLines := splitLinesWordWrap(label, 12)
 					labelY := int(y) + 110
-					drawTextWithOutline(g.staticImage, label, fontFaceSmall, labelX, labelY, color.White, color.Black, 2)
+					for i, line := range labelLines {
+						labelWidth := text.BoundString(fontFaceSmall, line).Dx()
+						labelX := ingrX + 50 - labelWidth/2
+						drawTextWithOutline(g.staticImage, line, fontFaceSmall, labelX, labelY+i*18, color.White, color.Black, 2)
+					}
 					// Draw quantity at top-right, bigger font and colored
 					qtyStr := fmt.Sprintf("%d", qty)
 					qtyWidth := text.BoundString(fontFaceLarge, qtyStr).Dx()
@@ -223,6 +289,32 @@ func cropCircle(src image.Image) image.Image {
 		}
 	}
 	return dst
+}
+
+func splitLinesWordWrap(s string, n int) []string {
+	var lines []string
+	words := []rune(s)
+	start := 0
+	for start < len(words) {
+		end := start
+		lineLen := 0
+		lastSpace := -1
+		for end < len(words) && lineLen < n {
+			if words[end] == ' ' {
+				lastSpace = end
+			}
+			lineLen++
+			end++
+		}
+		if end < len(words) && lastSpace > start {
+			lines = append(lines, string(words[start:lastSpace]))
+			start = lastSpace + 1
+		} else {
+			lines = append(lines, string(words[start:end]))
+			start = end
+		}
+	}
+	return lines
 }
 
 func run(sr *[]SearchResult) {
