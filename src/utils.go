@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-func SortSearchResult(sr *[]SearchResult, topResultsToShow uint16) {
+func SortAndFilterSearchResult(sr *[]SearchResult, topResultsToShow uint16) {
 	sort.Slice(*sr, func(i, j int) bool {
 		return (*sr)[i].TotalMagimints > (*sr)[j].TotalMagimints
 	})
@@ -57,6 +57,22 @@ func CompleteTraits(sr *[]SearchResult) {
 			} else if val == 2 {
 				(*sr)[i].Traits = append((*sr)[i].Traits, TraitStruct{Trait: TraitType(j), IsGood: false})
 			}
+		}
+	}
+}
+
+func CompleteLocalIndreds(localIngredientsMap *[5][]NameWithMags, traits *[5]bool) {
+	for i := range 5 {
+		for _, val := range IngredsByMags[i] {
+			if val.negativeTraits != nil {
+				for j := range 5 { // check all traits
+					if val.negativeTraits[j] && traits[j] {
+						goto nextIngred
+					}
+				}
+			}
+			localIngredientsMap[i] = append(localIngredientsMap[i], NameWithMags{val.name, val.mags})
+		nextIngred:
 		}
 	}
 }

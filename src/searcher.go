@@ -19,7 +19,14 @@ type SearchResult struct {
 var stack []searchUnit
 var stackMu sync.Mutex
 
-func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desiredPotion string) *[]SearchResult {
+func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desiredPotion string, neededTraits *[]TraitType) *[]SearchResult {
+	var neededTraitsArr [5]bool
+	for _, trait := range *neededTraits {
+		neededTraitsArr[trait] = true
+	}
+	var localIngreds [5][]NameWithMags
+	CompleteLocalIndreds(&localIngreds, &neededTraitsArr)
+
 	stack = make([]searchUnit, 0, 10000)
 	searchResult := make([]SearchResult, 0, 1000)
 	var wg sync.WaitGroup
@@ -57,7 +64,7 @@ func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desi
 					currentUnit := stack[len(stack)-1]
 					stack = stack[:len(stack)-1]
 					stackMu.Unlock()
-					processUnit(currentUnit, minMags, maxMags, minIngr, maxIngr, &searchResult, &mu, &wg)
+					processUnit(currentUnit, minMags, maxMags, minIngr, maxIngr, &searchResult, &mu, &wg, &localIngreds)
 				}
 			}
 		}()
@@ -71,7 +78,7 @@ func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desi
 	return &searchResult
 }
 
-func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint16, searchResult *[]SearchResult, mu *sync.Mutex, wg *sync.WaitGroup) {
+func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint16, searchResult *[]SearchResult, mu *sync.Mutex, wg *sync.WaitGroup, localIngreds *[5][]NameWithMags) {
 	defer wg.Done()
 	var i, j uint16
 
@@ -110,15 +117,26 @@ func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint
 		}
 		magIdx = i
 	}
-	for i = currentUnit.minIngredToUse[magIdx]; int(i) < len(IngredsByMags[magIdx]); i++ {
-		ingrInfo := IngredsByMags[magIdx][i]
+	for i = currentUnit.minIngredToUse[magIdx]; int(i) < len(localIngreds[magIdx]); i++ {
+		ingrInfo := localIngreds[magIdx][i]
 		ingrName := ingrInfo.name
+		for idx, val := range ingrInfo.mags {
+			if val > 0 && currentUnit.desiredPotion[idx] == 0 {
+				goto end
+			}
+		}
 		for _, ingr := range currentUnit.ingredients {
 			if ingr.name == ingrName {
 				goto end
 			}
 		}
 		for j = 1; j <= numIngredsToAdd; j++ {
+			if j*ingrInfo.mags[magIdx]+currentUnit.numMagimints > maxMags {
+				break
+			}
+			if j == numIngredsToAdd && j*ingrInfo.mags[magIdx]+currentUnit.numMagimints < minMags {
+				break
+			}
 			newUnit := searchUnit{
 				desiredPotion:  currentUnit.desiredPotion,
 				magimints:      currentUnit.magimints,
@@ -152,9 +170,6 @@ func addIngred(ingredInfo *NameWithMags, addTo *searchUnit, quantity uint16) {
 func getNeededMag(desiredPotion *[5]uint16, magimints *[5]uint16) (uint16, bool) {
 	var maxMagIdx, maxMagValue uint16 = 100, 0
 	for i, mag := range magimints {
-		if mag > 0 && (*desiredPotion)[i] == 0 {
-			return 0, false
-		}
 		if mag > maxMagValue {
 			maxMagIdx = uint16(i)
 			maxMagValue = mag
