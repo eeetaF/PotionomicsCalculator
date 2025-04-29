@@ -23,6 +23,8 @@ var Ingredients = []Ingredient{
 		{Sensation, false}, {Visual, true}}},
 	{[5]uint16{9, 9, 12, 12, 0}, Slime, "Bubble Ooze", 60, []TraitStruct{}},
 	{[5]uint16{15, 15, 15, 15, 0}, Slime, "Copper Dollop", 95, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 48, 0}, Slime, "Feathered Gelatin", 999999, []TraitStruct{
+		{Sensation, true}, {Aroma, false}}},
 	{[5]uint16{24, 24, 24, 24, 0}, Slime, "Silver Dollop", 138, []TraitStruct{}},
 
 	// Plant
@@ -97,6 +99,8 @@ var Ingredients = []Ingredient{
 		{Taste, true}}},
 	{[5]uint16{96, 48, 0, 0, 0}, Bug, "Pegasus Mite", 134, []TraitStruct{
 		{Sensation, false}, {Sound, false}}},
+	{[5]uint16{0, 0, 0, 0, 48}, Bug, "Sepulcher Widow", 999999, []TraitStruct{
+		{Visual, false}, {Sound, true}}},
 
 	// Fish
 	{[5]uint16{8, 0, 0, 0, 0}, Fish, "River Calamari", 5, []TraitStruct{
