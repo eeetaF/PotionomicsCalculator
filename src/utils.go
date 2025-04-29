@@ -12,6 +12,7 @@ func SortAndFilterSearchResult(sr *[]SearchResult, topResultsToShow uint16) {
 	*sr = (*sr)[:min(int(topResultsToShow), len(*sr))]
 	CompleteTraits(sr)
 }
+
 func PrintSearchResult(sr *[]SearchResult) {
 	var s string
 	for _, searchResult := range *sr {
@@ -26,10 +27,10 @@ func PrintSearchResult(sr *[]SearchResult) {
 				s += fmt.Sprintf("-%s ", trait.Trait.String())
 			}
 		}
-		for ingName, ingCount := range searchResult.Ingredients {
-			mags := ingredientsMap[ingName].Magimints
+		for _, ingr := range searchResult.Ingredients {
+			mags := ingredientsMap[ingr.Name].Magimints
 			s += fmt.Sprintf("\n\tx%d: [%d, %d, %d, %d, %d] %s",
-				ingCount, mags[0], mags[1], mags[2], mags[3], mags[4], ingName)
+				ingr.Quantity, mags[0], mags[1], mags[2], mags[3], mags[4], ingr.Name)
 		}
 		s += "\n"
 	}
@@ -41,8 +42,8 @@ func CompleteTraits(sr *[]SearchResult) {
 	var traits [5]byte
 	for i := range *sr {
 		traits = [5]byte{}
-		for ingred := range (*sr)[i].Ingredients {
-			ingredInfo := ingredientsMap[ingred]
+		for _, ingr := range (*sr)[i].Ingredients {
+			ingredInfo := ingredientsMap[ingr.Name]
 			for _, traitInfo := range ingredInfo.Traits {
 				if !traitInfo.IsGood {
 					traits[traitInfo.Trait] = 2

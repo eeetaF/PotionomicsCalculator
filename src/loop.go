@@ -34,7 +34,8 @@ func MainLoop() {
 		run(searchResult)
 
 		// TODO add filter by traits (include only positive)
-		// TODO fix bug: when encounter a multi-magimints ingredient, the result may double. F.e.:
+		// TODO secondary sort by traits
+		// FIXME fix bug: when encounter a multi-magimints ingredient, the result may double. F.e.:
 		// 420 420 8 8 empty 100 1 1 1 1 1 -> results in 2 identical thunder potions
 	}
 }

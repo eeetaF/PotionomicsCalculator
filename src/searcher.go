@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"sort"
 	"sync"
 	"time"
 )
 
 type SearchResult struct {
 	ResultingPotion Potion
-	Ingredients     map[string]uint16
+	Ingredients     []nameWithQuantity
 	TotalMagimints  uint16
 	NumberIngreds   uint16
 	Traits          []TraitStruct // uploads after
@@ -90,14 +91,18 @@ func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint
 		return
 	}
 	if magIdx == 5 && currentUnit.numIngreds >= minIngr && currentUnit.numMagimints >= minMags {
+		var ingrSlice []nameWithQuantity
+		for _, val := range currentUnit.ingredients {
+			ingrSlice = append(ingrSlice, nameWithQuantity{Name: val.Name, Quantity: val.Quantity})
+		}
+		sort.Slice(ingrSlice, func(i, j int) bool {
+			return ingrSlice[i].Quantity > ingrSlice[j].Quantity
+		})
 		sr := SearchResult{
 			ResultingPotion: potionsMap[currentUnit.desiredPotion],
 			TotalMagimints:  currentUnit.numMagimints,
 			NumberIngreds:   currentUnit.numIngreds,
-			Ingredients:     make(map[string]uint16, len(currentUnit.ingredients)),
-		}
-		for _, ingr := range currentUnit.ingredients {
-			sr.Ingredients[ingr.name] = ingr.quantity
+			Ingredients:     ingrSlice,
 		}
 		mu.Lock()
 		*searchResult = append(*searchResult, sr)
@@ -126,7 +131,7 @@ func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint
 			}
 		}
 		for _, ingr := range currentUnit.ingredients {
-			if ingr.name == ingrName {
+			if ingr.Name == ingrName {
 				goto end
 			}
 		}
@@ -208,6 +213,6 @@ type searchUnit struct {
 }
 
 type nameWithQuantity struct {
-	name     string
-	quantity uint16
+	Name     string
+	Quantity uint16
 }

@@ -47,65 +47,21 @@ func drawTextWithOutline(dst *ebiten.Image, str string, face font.Face, x, y int
 	text.Draw(dst, str, face, x, y, fg)
 }
 
-func drawRect(dst *ebiten.Image, x, y, w, h int, col color.Color) {
-	rect := ebiten.NewImage(w, h)
-	rect.Fill(col)
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(x), float64(y))
-	dst.DrawImage(rect, op)
-}
-
-func drawRoundedRect(dst *ebiten.Image, x, y, w, h, r int, col color.Color) {
-	// Center rectangle
-	rect := ebiten.NewImage(w-2*r, h)
-	rect.Fill(col)
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(x+r), float64(y))
-	dst.DrawImage(rect, op)
-	// Side rectangles
-	rectV := ebiten.NewImage(r, h-2*r)
-	rectV.Fill(col)
-	op1 := &ebiten.DrawImageOptions{}
-	op1.GeoM.Translate(float64(x), float64(y+r))
-	dst.DrawImage(rectV, op1)
-	op2 := &ebiten.DrawImageOptions{}
-	op2.GeoM.Translate(float64(x+w-r), float64(y+r))
-	dst.DrawImage(rectV, op2)
-	// Four corners (circles)
-	circ := ebiten.NewImage(r*2, r*2)
-	for cy := 0; cy < r*2; cy++ {
-		for cx := 0; cx < r*2; cx++ {
-			dx := cx - r
-			dy := cy - r
-			if dx*dx+dy*dy <= r*r {
-				circ.Set(cx, cy, col)
+func drawShadow(dst *ebiten.Image, x, y, w, h int) {
+	shadow := ebiten.NewImage(w, h)
+	for py := 0; py < h; py++ {
+		for px := 0; px < w; px++ {
+			dx := float64(px-w/2) / float64(w/2)
+			dy := float64(py-h/2) / float64(h/2)
+			if dx*dx+dy*dy <= 1.0 {
+				alpha := uint8(80 * (1 - (dx*dx + dy*dy)))
+				shadow.Set(px, py, color.RGBA{0, 0, 0, alpha})
 			}
 		}
 	}
-	// Top-left
-	opTL := &ebiten.DrawImageOptions{}
-	geoTL := ebiten.GeoM{}
-	geoTL.Translate(float64(x), float64(y))
-	opTL.GeoM = geoTL
-	dst.DrawImage(circ, opTL)
-	// Top-right
-	opTR := &ebiten.DrawImageOptions{}
-	geoTR := ebiten.GeoM{}
-	geoTR.Translate(float64(x+w-2*r), float64(y))
-	opTR.GeoM = geoTR
-	dst.DrawImage(circ, opTR)
-	// Bottom-left
-	opBL := &ebiten.DrawImageOptions{}
-	geoBL := ebiten.GeoM{}
-	geoBL.Translate(float64(x), float64(y+h-2*r))
-	opBL.GeoM = geoBL
-	dst.DrawImage(circ, opBL)
-	// Bottom-right
-	opBR := &ebiten.DrawImageOptions{}
-	geoBR := ebiten.GeoM{}
-	geoBR.Translate(float64(x+w-2*r), float64(y+h-2*r))
-	opBR.GeoM = geoBR
-	dst.DrawImage(circ, opBR)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(x), float64(y)+14) // offset shadow down
+	dst.DrawImage(shadow, op)
 }
 
 type Game struct {
@@ -114,128 +70,264 @@ type Game struct {
 	results     *[]SearchResult
 	staticImage *ebiten.Image
 	initialized bool
+	scrollY     int
+	scrollX     int
 }
 
 func (g *Game) Update() error {
+	_, wheelY := ebiten.Wheel()
+	wheelX, _ := ebiten.Wheel()
+	if ebiten.IsKeyPressed(ebiten.KeyShift) {
+		wheelY, wheelX = wheelX, wheelY
+	}
+	if wheelY != 0 && g.results != nil {
+		maxScroll := 0
+		rowSpacing := 140
+		_, h := ebiten.WindowSize()
+		visibleRows := h / rowSpacing
+		totalRows := len(*g.results)
+		maxScroll = rowSpacing * (totalRows - visibleRows)
+		if maxScroll < 0 {
+			maxScroll = 0
+		}
+		g.scrollY -= int(wheelY * float64(rowSpacing))
+		if g.scrollY < 0 {
+			g.scrollY = 0
+		}
+		if g.scrollY > maxScroll {
+			g.scrollY = maxScroll
+		}
+	}
+	if wheelX != 0 && g.results != nil {
+		// Assume max ingredient columns per row
+		w, _ := ebiten.WindowSize()
+		maxIngr := 0
+		for _, sr := range *g.results {
+			if len(sr.Ingredients) > maxIngr {
+				maxIngr = len(sr.Ingredients)
+			}
+		}
+		colSpacing := 120
+		visibleCols := (w - 300) / colSpacing
+		maxScroll := colSpacing * (maxIngr - visibleCols)
+		if maxScroll < 0 {
+			maxScroll = 0
+		}
+		g.scrollX -= int(wheelX * float64(colSpacing))
+		if g.scrollX < 0 {
+			g.scrollX = 0
+		}
+		if g.scrollX > maxScroll {
+			g.scrollX = maxScroll
+		}
+	}
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	if !g.initialized {
-		w, h := 1920, 1080
+	w, h := ebiten.WindowSize()
+	if g.staticImage == nil || g.staticImage.Bounds().Dx() != w || g.staticImage.Bounds().Dy() != h {
 		g.staticImage = ebiten.NewImage(w, h)
-		bg := color.RGBA{196, 167, 167, 255}
-		g.staticImage.Fill(bg)
+	}
+	bg := color.RGBA{196, 167, 167, 255}
+	g.staticImage.Fill(bg)
 
-		const spacing = 110
-		const labelOffset = 105
-		const rowSpacing = 140
-		const ingredientSpacing = 110
-		const infoOffset = 120
+	const labelOffset = 105
+	const rowSpacing = 140
+	const ingrStartX = 170
+	const ingrColSpacing = 120
 
-		if g.results != nil {
-			for rowIdx, sr := range *g.results {
-				mainKey := sr.ResultingPotion.Name
-				img, ok := g.sprites[mainKey]
-				if !ok {
-					continue
-				}
-				x := 10.0
-				y := float64(rowIdx*rowSpacing + 10)
+	maxIngr := 0
+	if g.results != nil {
+		for _, sr := range *g.results {
+			if len(sr.Ingredients) > maxIngr {
+				maxIngr = len(sr.Ingredients)
+			}
+		}
+	}
+	visibleCols := (w - ingrStartX) / ingrColSpacing
+	maxScrollX := ingrColSpacing * (maxIngr - visibleCols)
+	if maxScrollX < 0 {
+		maxScrollX = 0
+	}
+
+	if g.results != nil {
+		for rowIdx, sr := range *g.results {
+			mainKey := sr.ResultingPotion.Name
+			img, ok := g.sprites[mainKey]
+			x := float64(40)
+			y := float64(rowIdx*rowSpacing + 10 - g.scrollY)
+
+			if int(y)+rowSpacing < 0 || int(y) > h {
+				continue
+			}
+
+			// Draw main sprite or placeholder with shadow
+			drawShadow(g.staticImage, int(x), int(y), 100, 100)
+			if ok {
 				op := &ebiten.DrawImageOptions{}
 				op.GeoM.Translate(x, y)
 				g.staticImage.DrawImage(img, op)
-
-				mainText := mainKey
-				textWidth := text.BoundString(fontFaceMain, mainText).Dx()
-				textX := int(x) + 50 - textWidth/2
-				textY := int(y) + labelOffset
-				drawTextWithOutline(g.staticImage, mainText, fontFaceMain, textX, textY, color.White, color.Black, 2)
-
-				// Move info higher
-				infoX := int(x) + 100 + 10
-				infoY := int(y) + 10
-
-				// Magimints (smaller font)
-				drawTextWithOutline(g.staticImage, fmt.Sprintf("M: %d", sr.TotalMagimints), fontFaceSmall, infoX, infoY, color.White, color.Black, 2)
-
-				// Ingredients (smaller font)
-				infoY2 := infoY + 18
-				drawTextWithOutline(g.staticImage, fmt.Sprintf("I: %d", sr.NumberIngreds), fontFaceSmall, infoX, infoY2, color.White, color.Black, 2)
-
-				// Each trait on a new line, colored, smaller font
-				traitLineY := infoY2 + 18
-				for _, t := range sr.Traits {
-					traitLabel := ""
-					traitColor := color.RGBA{200, 255, 200, 255}
-					if t.IsGood {
-						traitLabel += "+"
-						traitColor = color.RGBA{80, 255, 80, 255}
-					} else {
-						traitLabel += "-"
-						traitColor = color.RGBA{255, 80, 80, 255}
+			} else {
+				ph := ebiten.NewImage(100, 100)
+				for py := 0; py < 100; py++ {
+					for px := 0; px < 100; px++ {
+						dx := px - 50
+						dy := py - 50
+						if dx*dx+dy*dy <= 50*50 {
+							ph.Set(px, py, color.RGBA{180, 180, 180, 255})
+						}
 					}
-					traitLabel += t.Trait.String()
-					drawTextWithOutline(g.staticImage, traitLabel, fontFaceSmall, infoX+12, traitLineY, traitColor, color.Black, 2)
-					traitLineY += 18
 				}
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(x, y)
+				g.staticImage.DrawImage(ph, op)
+				qW := text.BoundString(fontFaceLarge, "?").Dx()
+				qH := text.BoundString(fontFaceLarge, "?").Dy()
+				qx := int(x) + 50 - qW/2
+				qy := int(y) + 50 + qH/2
+				drawTextWithOutline(g.staticImage, "?", fontFaceLarge, qx, qy, color.Black, color.White, 2)
+			}
 
-				// Draw ingredients as before, but quantity larger and more visible
-				ingrX := infoX + 120
-				for ingrKey, qty := range sr.Ingredients {
-					ingrImg, ok := g.sprites[ingrKey]
-					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(ingrX), y)
-					if ok {
-						g.staticImage.DrawImage(ingrImg, op)
-					} else {
-						// Draw placeholder: gray circle with ?
-						ph := ebiten.NewImage(100, 100)
-						// Fill with gray
-						for py := 0; py < 100; py++ {
-							for px := 0; px < 100; px++ {
-								dx := px - 50
-								dy := py - 50
-								if dx*dx+dy*dy <= 50*50 {
-									ph.Set(px, py, color.RGBA{180, 180, 180, 255})
-								}
+			mainText := mainKey
+			textWidth := text.BoundString(fontFaceMain, mainText).Dx()
+			textX := int(x) + 50 - textWidth/2
+			textY := int(y) + labelOffset
+			drawTextWithOutline(g.staticImage, mainText, fontFaceMain, textX, textY, color.White, color.Black, 2)
+
+			infoX := int(x) + 100 + 10
+			infoY := int(y) + 10
+			drawTextWithOutline(g.staticImage, fmt.Sprintf("M: %d", sr.TotalMagimints), fontFaceSmall, infoX, infoY, color.White, color.Black, 2)
+			infoY2 := infoY + 18
+			drawTextWithOutline(g.staticImage, fmt.Sprintf("I: %d", sr.NumberIngreds), fontFaceSmall, infoX, infoY2, color.White, color.Black, 2)
+			traitLineY := infoY2 + 18
+			for _, t := range sr.Traits {
+				traitLabel := ""
+				traitColor := color.RGBA{200, 255, 200, 255}
+				if t.IsGood {
+					traitLabel += "+"
+					traitColor = color.RGBA{80, 255, 80, 255}
+				} else {
+					traitLabel += "-"
+					traitColor = color.RGBA{255, 80, 80, 255}
+				}
+				traitLabel += t.Trait.String()
+				drawTextWithOutline(g.staticImage, traitLabel, fontFaceSmall, infoX+12, traitLineY, traitColor, color.Black, 2)
+				traitLineY += 18
+			}
+
+			ingrX := infoX + 120 - g.scrollX
+			for _, ingr := range sr.Ingredients {
+				ingrImg, ok := g.sprites[ingr.Name]
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(float64(ingrX), y)
+				drawShadow(g.staticImage, ingrX, int(y), 100, 100)
+				if ok {
+					g.staticImage.DrawImage(ingrImg, op)
+				} else {
+					ph := ebiten.NewImage(100, 100)
+					for py := 0; py < 100; py++ {
+						for px := 0; px < 100; px++ {
+							dx := px - 50
+							dy := py - 50
+							if dx*dx+dy*dy <= 50*50 {
+								ph.Set(px, py, color.RGBA{180, 180, 180, 255})
 							}
 						}
-						g.staticImage.DrawImage(ph, op)
-						// Draw ? in the center
-						qW := text.BoundString(fontFaceLarge, "?").Dx()
-						qH := text.BoundString(fontFaceLarge, "?").Dy()
-						qx := ingrX + 50 - qW/2
-						qy := int(y) + 50 + qH/2
-						drawTextWithOutline(g.staticImage, "?", fontFaceLarge, qx, qy, color.Black, color.White, 2)
 					}
-					label := ingrKey
-					// Split label into lines of max 12 chars, word-aware
-					labelLines := splitLinesWordWrap(label, 12)
-					labelY := int(y) + 110
-					for i, line := range labelLines {
-						labelWidth := text.BoundString(fontFaceSmall, line).Dx()
-						labelX := ingrX + 50 - labelWidth/2
-						drawTextWithOutline(g.staticImage, line, fontFaceSmall, labelX, labelY+i*18, color.White, color.Black, 2)
-					}
-					// Draw quantity at top-right, bigger font and colored
-					qtyStr := fmt.Sprintf("%d", qty)
-					qtyWidth := text.BoundString(fontFaceLarge, qtyStr).Dx()
-					qtyX := ingrX + 100 - qtyWidth - 4
-					qtyY := int(y) + 40
-					qtyColor := color.RGBA{255, 255, 128, 255}
-					drawTextWithOutline(g.staticImage, qtyStr, fontFaceLarge, qtyX, qtyY, qtyColor, color.Black, 3)
-					ingrX += 120
+					g.staticImage.DrawImage(ph, op)
+					qW := text.BoundString(fontFaceLarge, "?").Dx()
+					qH := text.BoundString(fontFaceLarge, "?").Dy()
+					qx := ingrX + 50 - qW/2
+					qy := int(y) + 50 + qH/2
+					drawTextWithOutline(g.staticImage, "?", fontFaceLarge, qx, qy, color.Black, color.White, 2)
 				}
+				label := ingr.Name
+				labelLines := splitLinesWordWrap(label, 13)
+				labelY := int(y) + 110
+				for i, line := range labelLines {
+					labelWidth := text.BoundString(fontFaceSmall, line).Dx()
+					labelX := ingrX + 50 - labelWidth/2
+					drawTextWithOutline(g.staticImage, line, fontFaceSmall, labelX, labelY+i*18, color.White, color.Black, 2)
+				}
+				qtyStr := fmt.Sprintf("%d", ingr.Quantity)
+				qtyWidth := text.BoundString(fontFaceLarge, qtyStr).Dx()
+				qtyX := ingrX + 100 - qtyWidth - 4
+				qtyY := int(y) + 40
+				qtyColor := color.RGBA{255, 255, 128, 255}
+				drawTextWithOutline(g.staticImage, qtyStr, fontFaceLarge, qtyX, qtyY, qtyColor, color.Black, 3)
+				ingrX += ingrColSpacing
 			}
 		}
-		g.initialized = true
 	}
+
+	// Draw vertical scroll bar if needed
+	totalRows := 0
+	if g.results != nil {
+		totalRows = len(*g.results)
+	}
+	visibleRows := h / rowSpacing
+	maxScrollY := rowSpacing * (totalRows - visibleRows)
+	if maxScrollY < 0 {
+		maxScrollY = 0
+	}
+	if totalRows > visibleRows {
+		barW := 16
+		barH := int(float64(h) * float64(visibleRows) / float64(totalRows))
+		if barH < 32 {
+			barH = 32
+		}
+		trackH := h
+		barY := 0
+		if maxScrollY > 0 {
+			barY = int(float64(g.scrollY) / float64(maxScrollY) * float64(trackH-barH))
+		}
+		barX := w - barW - 8
+		track := ebiten.NewImage(barW, trackH)
+		track.Fill(color.RGBA{80, 80, 80, 120})
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(barX), 0)
+		g.staticImage.DrawImage(track, op)
+		thumb := ebiten.NewImage(barW, barH)
+		thumb.Fill(color.RGBA{180, 180, 180, 220})
+		op2 := &ebiten.DrawImageOptions{}
+		op2.GeoM.Translate(float64(barX), float64(barY))
+		g.staticImage.DrawImage(thumb, op2)
+	}
+
+	// Draw horizontal scroll bar if needed
+	if maxScrollX > 0 {
+		barH := 16
+		barW := int(float64(w-ingrStartX) * float64(visibleCols) / float64(maxIngr))
+		if barW < 32 {
+			barW = 32
+		}
+		trackW := w - ingrStartX
+		barX := ingrStartX
+		barY := h - barH - 8
+		thumbX := barX
+		if maxScrollX > 0 {
+			thumbX = barX + int(float64(g.scrollX)/float64(maxScrollX)*float64(trackW-barW))
+		}
+		// Draw track
+		track := ebiten.NewImage(trackW, barH)
+		track.Fill(color.RGBA{80, 80, 80, 120})
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(barX), float64(barY))
+		g.staticImage.DrawImage(track, op)
+		// Draw thumb
+		thumb := ebiten.NewImage(barW, barH)
+		thumb.Fill(color.RGBA{180, 180, 180, 220})
+		op2 := &ebiten.DrawImageOptions{}
+		op2.GeoM.Translate(float64(thumbX), float64(barY))
+		g.staticImage.DrawImage(thumb, op2)
+	}
+
 	screen.DrawImage(g.staticImage, nil)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 1920, 1080
+	return outsideWidth, outsideHeight
 }
 
 func loadSprites(dir string) (map[string]*ebiten.Image, []string, error) {
@@ -323,6 +415,7 @@ func run(sr *[]SearchResult) {
 		panic(err)
 	}
 	g := &Game{sprites: sprites, keys: keys, results: sr}
+	ebiten.SetWindowResizable(true)
 	ebiten.SetWindowSize(1920, 1080)
 	ebiten.SetWindowTitle("PNG Viewer")
 	if err := ebiten.RunGame(g); err != nil {

@@ -96,7 +96,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{12, 0, 0, 6, 0}, Fish, "Swamp Fish", 22, []TraitStruct{}},
 	{[5]uint16{6, 0, 12, 0, 0}, Fish, "Mud Shrimp", 26, []TraitStruct{
 		{Aroma, true}}},
-	{[5]uint16{40, 0, 0, 0, 0}, Fish, "Drarf Kraken", 30, []TraitStruct{
+	{[5]uint16{40, 0, 0, 0, 0}, Fish, "Dwarf Kraken", 30, []TraitStruct{
 		{Sensation, false}}},
 	{[5]uint16{10, 10, 10, 0, 0}, Fish, "Electrocution Eel", 45, []TraitStruct{
 		{Visual, true}}},
@@ -116,7 +116,7 @@ var Ingredients = []Ingredient{
 	// Bone
 	{[5]uint16{0, 0, 8, 0, 0}, Bone, "Unicorn Horn", 6, []TraitStruct{
 		{Taste, false}}},
-	{[5]uint16{0, 0, 24, 0, 0}, Bone, "Qilin's Tri-horn", 18, []TraitStruct{
+	{[5]uint16{0, 0, 24, 0, 0}, Bone, "Qilin's Tri-Horn", 18, []TraitStruct{
 		{Taste, false}}},
 	{[5]uint16{6, 0, 12, 0, 0}, Bone, "Crocodile Tooth", 20, []TraitStruct{}},
 	{[5]uint16{9, 9, 9, 0, 0}, Bone, "Hydra Vertebra", 35, []TraitStruct{}},
