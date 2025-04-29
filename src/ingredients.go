@@ -23,6 +23,7 @@ var Ingredients = []Ingredient{
 		{Sensation, false}, {Visual, true}}},
 	{[5]uint16{9, 9, 12, 12, 0}, Slime, "Bubble Ooze", 60, []TraitStruct{}},
 	{[5]uint16{15, 15, 15, 15, 0}, Slime, "Copper Dollop", 95, []TraitStruct{}},
+	{[5]uint16{24, 24, 24, 24, 0}, Slime, "Silver Dollop", 138, []TraitStruct{}},
 
 	// Plant
 	{[5]uint16{0, 6, 0, 0, 0}, Plant, "Mandrake Root", 6, []TraitStruct{}},
@@ -32,6 +33,7 @@ var Ingredients = []Ingredient{
 		{Taste, false}, {Sound, true}}},
 	{[5]uint16{0, 30, 0, 0, 0}, Plant, "Mandragon Root", 34, []TraitStruct{}},
 	{[5]uint16{0, 32, 0, 32, 0}, Plant, "Daredevil Pepper", 90, []TraitStruct{}},
+	{[5]uint16{10, 0, 20, 0, 30}, Plant, "Mosquito Plant", 105, []TraitStruct{}},
 	{[5]uint16{20, 20, 15, 0, 15}, Plant, "Squid Vine", 135, []TraitStruct{}},
 	{[5]uint16{16, 0, 40, 0, 40}, Plant, "Acid Pitfall Plant", 145, []TraitStruct{}},
 
@@ -46,6 +48,8 @@ var Ingredients = []Ingredient{
 		{Aroma, true}}},
 	{[5]uint16{40, 0, 0, 20, 0}, Flower, "Fire Flower", 55, []TraitStruct{
 		{Aroma, false}}},
+	{[5]uint16{24, 0, 0, 8, 0}, Flower, "Djinn Blossom", 68, []TraitStruct{
+		{Taste, true}, {Aroma, true}}},
 
 	// Fruit
 	{[5]uint16{6, 0, 0, 0, 0}, Fruit, "Feyberry", 4, []TraitStruct{}},
@@ -66,9 +70,15 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 12, 0, 0, 0}, Fungus, "Trollstool Mushroom", 20, []TraitStruct{
 		{Sensation, true}}},
 	{[5]uint16{0, 18, 0, 6, 0}, Fungus, "Miasma Spore", 30, []TraitStruct{}},
+	{[5]uint16{0, 30, 0, 0, 0}, Fungus, "Hallucinatory Shroom", 36, []TraitStruct{
+		{Taste, true}, {Sound, false}}},
 	{[5]uint16{0, 20, 0, 0, 0}, Fungus, "Giantstool Mushroom", 40, []TraitStruct{
 		{Sensation, true}}},
 	{[5]uint16{16, 0, 0, 0, 48}, Fungus, "Creeping Mildew", 92, []TraitStruct{}},
+	{[5]uint16{0, 48, 0, 16, 0}, Fungus, "Medusa Spore", 94, []TraitStruct{
+		{Taste, false}, {Aroma, true}}},
+	{[5]uint16{32, 64, 64, 32, 0}, Fungus, "Shallow Grave Enoki", 200, []TraitStruct{
+		{Sensation, false}, {Aroma, false}}},
 
 	// Bug
 	{[5]uint16{0, 0, 4, 0, 0}, Bug, "Rotfly Larva", 10, []TraitStruct{
@@ -100,6 +110,8 @@ var Ingredients = []Ingredient{
 		{Sensation, false}}},
 	{[5]uint16{10, 10, 10, 0, 0}, Fish, "Electrocution Eel", 45, []TraitStruct{
 		{Visual, true}}},
+	{[5]uint16{10, 0, 20, 0, 0}, Fish, "Cobweb Crayfish", 48, []TraitStruct{
+		{Aroma, true}}},
 
 	// Flesh
 	{[5]uint16{0, 8, 0, 0, 0}, Flesh, "Serpent's Slippery Tongue", 6, []TraitStruct{
@@ -122,6 +134,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{9, 9, 9, 0, 0}, Bone, "Hydra Vertebra", 35, []TraitStruct{}},
 	{[5]uint16{0, 0, 40, 0, 0}, Bone, "Spriggan Antler", 38, []TraitStruct{
 		{Taste, false}}},
+	{[5]uint16{0, 30, 0, 0, 10}, Bone, "Barghast Canine", 55, []TraitStruct{}},
 	{[5]uint16{0, 0, 64, 0, 0}, Bone, "Silver Stag Antler", 72, []TraitStruct{
 		{Taste, false}}},
 	{[5]uint16{0, 48, 0, 0, 16}, Bone, "Naga's Fang", 98, []TraitStruct{
@@ -133,7 +146,11 @@ var Ingredients = []Ingredient{
 	{[5]uint16{18, 12, 0, 10, 0}, Mineral, "Golemite", 38, []TraitStruct{}},
 	{[5]uint16{20, 20, 0, 0, 0}, Mineral, "Slapping Turtle's Shell", 46, []TraitStruct{}},
 	{[5]uint16{30, 0, 0, 0, 10}, Mineral, "Sea Salt", 55, []TraitStruct{}},
+	{[5]uint16{24, 0, 0, 0, 8}, Mineral, "Rock Salt", 68, []TraitStruct{
+		{Taste, true}, {Visual, true}}},
 	{[5]uint16{30, 20, 0, 0, 10}, Mineral, "Abyssalite", 79, []TraitStruct{}},
+	{[5]uint16{48, 32, 0, 16, 0}, Mineral, "Supernalite", 134, []TraitStruct{
+		{Taste, false}, {Visual, true}}},
 
 	// Essence
 	{[5]uint16{4, 0, 4, 0, 0}, Essence, "Kappa Pheromones", 13, []TraitStruct{}},
@@ -141,6 +158,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{20, 0, 20, 0, 0}, Essence, "Nessie Pheromones", 50, []TraitStruct{}},
 	{[5]uint16{0, 10, 12, 18, 0}, Essence, "Raven's Shadow", 52, []TraitStruct{}},
 	{[5]uint16{0, 0, 30, 10, 0}, Essence, "Raiju Droppings", 55, []TraitStruct{}},
+	{[5]uint16{32, 0, 32, 0, 0}, Essence, "Ogre's Shadow", 74, []TraitStruct{}},
 	{[5]uint16{0, 0, 30, 20, 10}, Essence, "Dropspider's Shadow", 90, []TraitStruct{}},
 	{[5]uint16{0, 48, 32, 16, 0}, Essence, "Bioplasm", 125, []TraitStruct{
 		{Visual, false}, {Sound, true}}},
@@ -162,6 +180,8 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 12, 0, 0, 0}, Ore, "Desert Metal", 25, []TraitStruct{
 		{Sensation, true}}},
 	{[5]uint16{0, 0, 0, 30, 0}, Ore, "Fulgurite Ore", 40, []TraitStruct{}},
+	{[5]uint16{0, 32, 64, 0, 0}, Ore, "Weeping Metal Ore", 66, []TraitStruct{
+		{Sensation, false}}},
 	{[5]uint16{30, 10, 0, 0, 20}, Ore, "Malachite Ore", 93, []TraitStruct{}},
 
 	// Pure Mana
