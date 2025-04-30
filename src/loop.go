@@ -33,6 +33,7 @@ func MainLoop() {
 		PrintSearchResult(searchResult)
 		run(searchResult)
 
+		// TODO optimization: exclude from starting list of ingreds, ingreds with wrong magimints
 		// TODO add filter by traits (include only positive)
 		// TODO secondary sort by traits
 		// FIXME fix bug: when encounter a multi-magimints ingredient, the result may double. F.e.:
