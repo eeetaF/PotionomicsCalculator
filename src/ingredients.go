@@ -22,10 +22,10 @@ var Ingredients = []Ingredient{
 	{[5]uint16{30, 0, 0, 0, 0}, Slime, "Antlered Jelly", 28, []TraitStruct{
 		{Sensation, false}, {Visual, true}}},
 	{[5]uint16{9, 9, 12, 12, 0}, Slime, "Bubble Ooze", 60, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 48, 0}, Slime, "Feathered Gelatin", 62, []TraitStruct{
+		{Sensation, true}, {Aroma, false}}},
 	{[5]uint16{32, 0, 0, 32, 0}, Slime, "Shelled Pudding", 90, []TraitStruct{}},
 	{[5]uint16{15, 15, 15, 15, 0}, Slime, "Copper Dollop", 95, []TraitStruct{}},
-	{[5]uint16{0, 0, 0, 48, 0}, Slime, "Feathered Gelatin", 999999, []TraitStruct{
-		{Sensation, true}, {Aroma, false}}},
 	{[5]uint16{24, 24, 24, 24, 0}, Slime, "Silver Dollop", 138, []TraitStruct{}},
 
 	// Plant
@@ -50,13 +50,15 @@ var Ingredients = []Ingredient{
 	{[5]uint16{18, 0, 0, 6, 0}, Flower, "Ghostlight Bloom", 28, []TraitStruct{}},
 	{[5]uint16{20, 0, 0, 0, 0}, Flower, "Fairy Flower Bloom", 35, []TraitStruct{
 		{Aroma, true}}},
+	{[5]uint16{16, 0, 0, 0, 0}, Flower, "Bramble-Rose", 45, []TraitStruct{
+		{Sensation, true}, {Sound, true}}},
 	{[5]uint16{40, 0, 0, 20, 0}, Flower, "Fire Flower", 55, []TraitStruct{
 		{Aroma, false}}},
 	{[5]uint16{24, 0, 0, 8, 0}, Flower, "Djinn Blossom", 68, []TraitStruct{
 		{Taste, true}, {Aroma, true}}},
-	{[5]uint16{0, 16, 0, 48, 0}, Flower, "Watchdog Daisy", 83, []TraitStruct{}},
-	{[5]uint16{8, 24, 24, 0, 0}, Flower, "Courtier's Orchid", 99999, []TraitStruct{
+	{[5]uint16{8, 24, 24, 0, 0}, Flower, "Courtier's Orchid", 72, []TraitStruct{
 		{Aroma, true}}},
+	{[5]uint16{0, 16, 0, 48, 0}, Flower, "Watchdog Daisy", 83, []TraitStruct{}},
 
 	// Fruit
 	{[5]uint16{6, 0, 0, 0, 0}, Fruit, "Feyberry", 4, []TraitStruct{}},
@@ -82,6 +84,8 @@ var Ingredients = []Ingredient{
 		{Taste, true}, {Sound, false}}},
 	{[5]uint16{0, 20, 0, 0, 0}, Fungus, "Giantstool Mushroom", 40, []TraitStruct{
 		{Sensation, true}}},
+	{[5]uint16{0, 0, 48, 0, 0}, Fungus, "Delirium Shroom", 63, []TraitStruct{
+		{Taste, true}, {Sound, false}}},
 	{[5]uint16{16, 0, 0, 0, 48}, Fungus, "Creeping Mildew", 92, []TraitStruct{}},
 	{[5]uint16{0, 48, 0, 16, 0}, Fungus, "Medusa Spore", 94, []TraitStruct{
 		{Taste, false}, {Aroma, true}}},
@@ -103,12 +107,12 @@ var Ingredients = []Ingredient{
 		{Visual, false}, {Sound, true}}},
 	{[5]uint16{0, 0, 32, 0, 0}, Bug, "Rotfly Matriarch", 65, []TraitStruct{
 		{Taste, true}}},
+	{[5]uint16{0, 0, 0, 0, 48}, Bug, "Sepulcher Widow", 82, []TraitStruct{
+		{Visual, false}, {Sound, true}}},
 	{[5]uint16{0, 24, 24, 24, 0}, Bug, "Jeweled Scarab", 105, []TraitStruct{}},
 	{[5]uint16{96, 48, 0, 0, 0}, Bug, "Pegasus Mite", 134, []TraitStruct{
 		{Sensation, false}, {Sound, false}}},
-	{[5]uint16{0, 0, 0, 0, 48}, Bug, "Sepulcher Widow", 999999, []TraitStruct{
-		{Visual, false}, {Sound, true}}},
-	{[5]uint16{24, 24, 32, 32, 0}, Bug, "Avalanche Cricket", 999999, []TraitStruct{
+	{[5]uint16{24, 24, 32, 32, 0}, Bug, "Avalanche Cricket", 140, []TraitStruct{
 		{Taste, true}, {Sensation, false}}},
 
 	// Fish
@@ -125,11 +129,11 @@ var Ingredients = []Ingredient{
 		{Visual, true}}},
 	{[5]uint16{10, 0, 20, 0, 0}, Fish, "Cobweb Crayfish", 48, []TraitStruct{
 		{Aroma, true}}},
-	{[5]uint16{24, 24, 24, 0, 0}, Fish, "Hangman Eel", 95, []TraitStruct{}},
-	{[5]uint16{96, 0, 48, 0, 0}, Fish, "Buoyant Blowfish", 9999999, []TraitStruct{
-		{Visual, false}, {Sound, false}}},
-	{[5]uint16{0, 0, 0, 0, 32}, Fish, "Crag Crab", 99999999999, []TraitStruct{
+	{[5]uint16{0, 0, 0, 0, 32}, Fish, "Crag Crab", 75, []TraitStruct{
 		{Aroma, true}}},
+	{[5]uint16{24, 24, 24, 0, 0}, Fish, "Hangman Eel", 95, []TraitStruct{}},
+	{[5]uint16{96, 0, 48, 0, 0}, Fish, "Buoyant Blowfish", 138, []TraitStruct{
+		{Visual, false}, {Sound, false}}},
 
 	// Flesh
 	{[5]uint16{0, 8, 0, 0, 0}, Flesh, "Serpent's Slippery Tongue", 6, []TraitStruct{
@@ -140,6 +144,8 @@ var Ingredients = []Ingredient{
 		{Aroma, false}}},
 	{[5]uint16{0, 0, 24, 12, 0}, Flesh, "Frog Leg", 33, []TraitStruct{
 		{Visual, false}}},
+	{[5]uint16{0, 16, 0, 0, 0}, Flesh, "Eye of Newt", 34, []TraitStruct{
+		{Taste, true}, {Sensation, true}}},
 	{[5]uint16{0, 0, 30, 0, 10}, Flesh, "Thunderbird's Molted Feather", 60, []TraitStruct{}},
 	{[5]uint16{16, 0, 0, 32, 0}, Flesh, "Harpy's Heart of Stone", 76, []TraitStruct{
 		{Sensation, true}}},
@@ -169,6 +175,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{30, 0, 0, 0, 10}, Mineral, "Sea Salt", 55, []TraitStruct{}},
 	{[5]uint16{24, 0, 0, 0, 8}, Mineral, "Rock Salt", 68, []TraitStruct{
 		{Taste, true}, {Visual, true}}},
+	{[5]uint16{32, 32, 0, 0, 8}, Mineral, "Scimitar Crab's Shell", 76, []TraitStruct{}},
 	{[5]uint16{30, 20, 0, 0, 10}, Mineral, "Abyssalite", 79, []TraitStruct{}},
 	{[5]uint16{48, 32, 0, 16, 0}, Mineral, "Supernalite", 134, []TraitStruct{
 		{Taste, false}, {Visual, true}}},
@@ -195,23 +202,24 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 0, 0, 32, 0}, Gem, "Lustrous Pearl", 60, []TraitStruct{
 		{Visual, true}}},
 	{[5]uint16{30, 10, 20, 0, 0}, Gem, "Thunder Quartz", 72, []TraitStruct{}},
-	{[5]uint16{0, 32, 32, 0, 0}, Gem, "Griffin's-Whetstone Diamond", 999999, []TraitStruct{}},
+	{[5]uint16{0, 32, 32, 0, 0}, Gem, "Griffin's-Whetstone Diamond", 86, []TraitStruct{}},
 	{[5]uint16{64, 48, 0, 32, 0}, Gem, "Poison Quartz", 185, []TraitStruct{
 		{Sound, false}}},
 
 	// Ore
-	{[5]uint16{0, 0, 16, 0, 0}, Ore, "Celestial Ore", 999999, []TraitStruct{
-		{Aroma, true}, {Visual, true}}},
 	{[5]uint16{0, 0, 0, 18, 0}, Ore, "Glass Ore", 24, []TraitStruct{}},
 	{[5]uint16{0, 12, 0, 0, 0}, Ore, "Desert Metal", 25, []TraitStruct{
 		{Sensation, true}}},
 	{[5]uint16{0, 0, 0, 30, 0}, Ore, "Fulgurite Ore", 40, []TraitStruct{}},
+	{[5]uint16{0, 0, 16, 0, 0}, Ore, "Celestial Ore", 45, []TraitStruct{
+		{Aroma, true}, {Visual, true}}},
 	{[5]uint16{0, 32, 64, 0, 0}, Ore, "Weeping Metal Ore", 66, []TraitStruct{
 		{Sensation, false}}},
 	{[5]uint16{30, 10, 0, 0, 20}, Ore, "Malachite Ore", 93, []TraitStruct{}},
 
 	// Pure Mana
 	{[5]uint16{15, 15, 15, 15, 15}, PureMana, "Mote of Mana", 130, []TraitStruct{}},
+	{[5]uint16{24, 24, 24, 24, 24}, PureMana, "Ember of Mana", 165, []TraitStruct{}},
 }
 
 type IngredientCategory byte
