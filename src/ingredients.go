@@ -22,6 +22,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{30, 0, 0, 0, 0}, Slime, "Antlered Jelly", 28, []TraitStruct{
 		{Sensation, false}, {Visual, true}}},
 	{[5]uint16{9, 9, 12, 12, 0}, Slime, "Bubble Ooze", 60, []TraitStruct{}},
+	{[5]uint16{32, 0, 0, 32, 0}, Slime, "Shelled Pudding", 90, []TraitStruct{}},
 	{[5]uint16{15, 15, 15, 15, 0}, Slime, "Copper Dollop", 95, []TraitStruct{}},
 	{[5]uint16{0, 0, 0, 48, 0}, Slime, "Feathered Gelatin", 999999, []TraitStruct{
 		{Sensation, true}, {Aroma, false}}},
@@ -67,6 +68,7 @@ var Ingredients = []Ingredient{
 		{Taste, true}, {Sound, false}}},
 	{[5]uint16{0, 0, 0, 64, 0}, Fruit, "Rottermelon", 68, []TraitStruct{
 		{Visual, false}}},
+	{[5]uint16{0, 16, 0, 0, 48}, Fruit, "Geode Citrus", 94, []TraitStruct{}},
 	{[5]uint16{48, 0, 48, 24, 24}, Fruit, "Charredonnay", 260, []TraitStruct{
 		{Taste, false}}},
 
@@ -101,6 +103,7 @@ var Ingredients = []Ingredient{
 		{Visual, false}, {Sound, true}}},
 	{[5]uint16{0, 0, 32, 0, 0}, Bug, "Rotfly Matriarch", 65, []TraitStruct{
 		{Taste, true}}},
+	{[5]uint16{0, 24, 24, 24, 0}, Bug, "Jeweled Scarab", 105, []TraitStruct{}},
 	{[5]uint16{96, 48, 0, 0, 0}, Bug, "Pegasus Mite", 134, []TraitStruct{
 		{Sensation, false}, {Sound, false}}},
 	{[5]uint16{0, 0, 0, 0, 48}, Bug, "Sepulcher Widow", 999999, []TraitStruct{
@@ -122,6 +125,7 @@ var Ingredients = []Ingredient{
 		{Visual, true}}},
 	{[5]uint16{10, 0, 20, 0, 0}, Fish, "Cobweb Crayfish", 48, []TraitStruct{
 		{Aroma, true}}},
+	{[5]uint16{24, 24, 24, 0, 0}, Fish, "Hangman Eel", 95, []TraitStruct{}},
 	{[5]uint16{96, 0, 48, 0, 0}, Fish, "Buoyant Blowfish", 9999999, []TraitStruct{
 		{Visual, false}, {Sound, false}}},
 	{[5]uint16{0, 0, 0, 0, 32}, Fish, "Crag Crab", 99999999999, []TraitStruct{
