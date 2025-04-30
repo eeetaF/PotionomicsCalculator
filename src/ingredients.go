@@ -52,6 +52,9 @@ var Ingredients = []Ingredient{
 		{Aroma, false}}},
 	{[5]uint16{24, 0, 0, 8, 0}, Flower, "Djinn Blossom", 68, []TraitStruct{
 		{Taste, true}, {Aroma, true}}},
+	{[5]uint16{0, 16, 0, 48, 0}, Flower, "Watchdog Daisy", 83, []TraitStruct{}},
+	{[5]uint16{8, 24, 24, 0, 0}, Flower, "Courtier's Orchid", 99999, []TraitStruct{
+		{Aroma, true}}},
 
 	// Fruit
 	{[5]uint16{6, 0, 0, 0, 0}, Fruit, "Feyberry", 4, []TraitStruct{}},
@@ -101,6 +104,8 @@ var Ingredients = []Ingredient{
 		{Sensation, false}, {Sound, false}}},
 	{[5]uint16{0, 0, 0, 0, 48}, Bug, "Sepulcher Widow", 999999, []TraitStruct{
 		{Visual, false}, {Sound, true}}},
+	{[5]uint16{24, 24, 32, 32, 0}, Bug, "Avalanche Cricket", 999999, []TraitStruct{
+		{Taste, true}, {Sensation, false}}},
 
 	// Fish
 	{[5]uint16{8, 0, 0, 0, 0}, Fish, "River Calamari", 5, []TraitStruct{
@@ -115,6 +120,8 @@ var Ingredients = []Ingredient{
 	{[5]uint16{10, 10, 10, 0, 0}, Fish, "Electrocution Eel", 45, []TraitStruct{
 		{Visual, true}}},
 	{[5]uint16{10, 0, 20, 0, 0}, Fish, "Cobweb Crayfish", 48, []TraitStruct{
+		{Aroma, true}}},
+	{[5]uint16{0, 0, 0, 0, 32}, Fish, "Crag Crab", 99999999999, []TraitStruct{
 		{Aroma, true}}},
 
 	// Flesh
@@ -143,6 +150,7 @@ var Ingredients = []Ingredient{
 		{Taste, false}}},
 	{[5]uint16{0, 48, 0, 0, 16}, Bone, "Naga's Fang", 98, []TraitStruct{
 		{Sensation, false}, {Sound, true}}},
+	{[5]uint16{0, 0, 40, 40, 16}, Bone, "Stalking Skeleton's Fibula", 150, []TraitStruct{}},
 
 	// Mineral
 	{[5]uint16{4, 4, 0, 0, 0}, Mineral, "River-Pixie's Shell", 11, []TraitStruct{}},
@@ -172,10 +180,13 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 12, 0, 0, 0}, Gem, "Murkwater Pearl", 27, []TraitStruct{
 		{Visual, true}}},
 	{[5]uint16{0, 12, 12, 0, 0}, Gem, "Golem's-Eye Diamond", 28, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 20, 0}, Gem, "Shadowveil Pearl", 38, []TraitStruct{
+		{Visual, true}}},
 	{[5]uint16{0, 20, 20, 0, 0}, Gem, "Spider's-Bait Diamond", 50, []TraitStruct{}},
 	{[5]uint16{0, 0, 0, 32, 0}, Gem, "Lustrous Pearl", 60, []TraitStruct{
 		{Visual, true}}},
 	{[5]uint16{30, 10, 20, 0, 0}, Gem, "Thunder Quartz", 72, []TraitStruct{}},
+	{[5]uint16{0, 32, 32, 0, 0}, Gem, "Griffin's-Whetstone Diamond", 999999, []TraitStruct{}},
 	{[5]uint16{64, 48, 0, 32, 0}, Gem, "Poison Quartz", 185, []TraitStruct{
 		{Sound, false}}},
 
