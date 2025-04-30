@@ -76,7 +76,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 12, 0, 0, 0}, Fungus, "Trollstool Mushroom", 20, []TraitStruct{
 		{Sensation, true}}},
 	{[5]uint16{0, 18, 0, 6, 0}, Fungus, "Miasma Spore", 30, []TraitStruct{}},
-	{[5]uint16{0, 30, 0, 0, 0}, Fungus, "Hallucinatory Shroom", 36, []TraitStruct{
+	{[5]uint16{0, 0, 30, 0, 0}, Fungus, "Hallucinatory Shroom", 36, []TraitStruct{
 		{Taste, true}, {Sound, false}}},
 	{[5]uint16{0, 20, 0, 0, 0}, Fungus, "Giantstool Mushroom", 40, []TraitStruct{
 		{Sensation, true}}},
