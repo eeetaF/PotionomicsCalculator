@@ -38,6 +38,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{10, 0, 20, 0, 30}, Plant, "Mosquito Plant", 105, []TraitStruct{}},
 	{[5]uint16{20, 20, 15, 0, 15}, Plant, "Squid Vine", 135, []TraitStruct{}},
 	{[5]uint16{16, 0, 40, 0, 40}, Plant, "Acid Pitfall Plant", 145, []TraitStruct{}},
+	{[5]uint16{24, 24, 24, 0, 24}, Plant, "Harpy's Snare", 150, []TraitStruct{}},
 
 	// Flower
 	{[5]uint16{4, 0, 0, 0, 0}, Flower, "Fairy Flower Bulb", 14, []TraitStruct{
@@ -121,6 +122,8 @@ var Ingredients = []Ingredient{
 		{Visual, true}}},
 	{[5]uint16{10, 0, 20, 0, 0}, Fish, "Cobweb Crayfish", 48, []TraitStruct{
 		{Aroma, true}}},
+	{[5]uint16{96, 0, 48, 0, 0}, Fish, "Buoyant Blowfish", 9999999, []TraitStruct{
+		{Visual, false}, {Sound, false}}},
 	{[5]uint16{0, 0, 0, 0, 32}, Fish, "Crag Crab", 99999999999, []TraitStruct{
 		{Aroma, true}}},
 
@@ -134,6 +137,8 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 0, 24, 12, 0}, Flesh, "Frog Leg", 33, []TraitStruct{
 		{Visual, false}}},
 	{[5]uint16{0, 0, 30, 0, 10}, Flesh, "Thunderbird's Molted Feather", 60, []TraitStruct{}},
+	{[5]uint16{16, 0, 0, 32, 0}, Flesh, "Harpy's Heart of Stone", 76, []TraitStruct{
+		{Sensation, true}}},
 	{[5]uint16{0, 0, 0, 48, 16}, Flesh, "Lamia's Shed Scales", 110, []TraitStruct{}},
 
 	// Bone
@@ -191,6 +196,8 @@ var Ingredients = []Ingredient{
 		{Sound, false}}},
 
 	// Ore
+	{[5]uint16{0, 0, 16, 0, 0}, Ore, "Celestial Ore", 999999, []TraitStruct{
+		{Aroma, true}, {Visual, true}}},
 	{[5]uint16{0, 0, 0, 18, 0}, Ore, "Glass Ore", 24, []TraitStruct{}},
 	{[5]uint16{0, 12, 0, 0, 0}, Ore, "Desert Metal", 25, []TraitStruct{
 		{Sensation, true}}},
