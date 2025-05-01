@@ -34,6 +34,10 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]SearchResult {
 		return &[]SearchResult{}
 	}
 
+	var i byte              // used in calculations as index
+	var newTotalMags uint16 // used in calculations
+	var isLast bool         // used in calculations
+
 	results := make([]SearchResult, 0, MaxSearchResults)
 
 	neededGoodTraits := completeNeededGoodTraits(&opts.traits) // shared among all potions
@@ -48,13 +52,55 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]SearchResult {
 			for numMags := maxMagsLocal; numMags >= opts.minMags; numMags -= min(delim, numMags) { // loop - magimints
 
 				// here, we finally have fixed target potion, num of mags and num of ingredients.
-				stack := make([]SearchUnit, 0, 1000)
-				stack = append(stack, completeSearchUnit())
+				stack := make([]*SearchUnit, 0, 1000)
+				stack = append(stack, completeSearchUnit(opts))
 
 				for len(stack) > 0 {
 					cu := stack[len(stack)-1]
 					stack = stack[:len(stack)-1]
 
+					isLast = true
+					for uint16(len(localIngredsByMags[cu.i])) == cu.j { // skip finished mags
+						cu.i++
+						cu.j = 0
+						isLast = false
+					}
+					if cu.i == 5 { // skip last
+						continue
+					}
+					if isLast {
+						isLast = uint16(len(localIngredsByMags[cu.i])) == cu.j+1
+					}
+
+					if !isLast { // there are more ingreds with the same mag type, we may skip this ingr
+						newCu := &SearchUnit{
+							i:                 cu.i,
+							j:                 cu.j + 1,
+							mags:              cu.mags, // safe, copies the array
+							quantityAvailable: [5][]uint16{},
+							ingredsUsed:       make([]usedIngredient, len(cu.ingredsUsed), cap(cu.ingredsUsed)),
+							totalMags:         cu.totalMags,
+							totalIngreds:      cu.totalIngreds,
+						}
+						copy(newCu.ingredsUsed, cu.ingredsUsed)
+						for i = range 5 {
+							copy(newCu.quantityAvailable[i], cu.quantityAvailable[i])
+						}
+						stack = append(stack, cu)
+					}
+
+					// at this point, i and j are valid according to localIngredsByMags
+					var ingredsToAdd uint16 = 1
+					for ; ingredsToAdd <= (opts.maxIngr - cu.totalIngreds); ingredsToAdd++ {
+						if cu.quantityAvailable[cu.i][cu.j] < ingredsToAdd { // not enough such ingreds left
+							break
+						}
+						newTotalMags = cu.totalMags + ingredsToAdd*localIngredsByMags[cu.i][cu.j].totalMags
+						if newTotalMags > numMags {
+							break
+						}
+
+					}
 				}
 			}
 		}
@@ -71,7 +117,7 @@ func completeNeededGoodTraits(traits *[5]int8) *[]TraitType {
 	return &neededGoodTraits
 }
 
-func completeSearchUnit() SearchUnit {
+func completeSearchUnit(opts *SearchOpts) *SearchUnit {
 	var quantityAvailable [5][]uint16
 	for i := range ingredientsByLimitedMagsSetup {
 		for _, ingred := range ingredientsByLimitedMagsSetup[i] {
@@ -79,7 +125,10 @@ func completeSearchUnit() SearchUnit {
 		}
 	}
 
-	return SearchUnit{quantityAvailable: quantityAvailable}
+	return &SearchUnit{
+		quantityAvailable: quantityAvailable,
+		ingredsUsed:       make([]usedIngredient, 0, opts.maxIngr),
+	}
 }
 
 func getIngredientDuringSearch(p potionForSearch, traits *[5]int8) *[5][]ingredientDuringSearch {
@@ -122,6 +171,7 @@ func getIngredientDuringSearch(p potionForSearch, traits *[5]int8) *[5][]ingredi
 
 type SearchUnit struct {
 	i, j              uint16 // indexes in localIngredsByMags
+	mags              [5]uint16
 	quantityAvailable [5][]uint16
 	ingredsUsed       []usedIngredient
 	totalMags         uint16

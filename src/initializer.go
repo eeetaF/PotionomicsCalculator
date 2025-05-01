@@ -3,6 +3,7 @@ package src
 import (
 	"bufio"
 	"fmt"
+	"sort"
 )
 
 var ingredientsMap map[uint16]Ingredient
@@ -13,6 +14,7 @@ var potionsForSearchMap map[string]potionForSearch
 // 2: all ingreds that don't have A, B magimint in it
 // 3: all ingreds that don't have A, B, C magimint in it
 // 4: all ingreds that don't have A, B, C, D magimint in it
+// sorted in asceding order of magimint of the same index
 var ingredientsByLimitedMagsSetup [5][]ingredientBeforeSearchSetup
 
 type ingredientBeforeSearchSetup struct {
@@ -64,6 +66,11 @@ func Initialize() {
 			mags:              ing.Magimints,
 			totalMags:         totalMags,
 			quantityAvailable: 65535, // for now, keep limitless
+		})
+	}
+	for idx := range 5 { // sort each slice based on mags of according index
+		sort.Slice(ingredientsByLimitedMagsSetup[idx], func(i, j int) bool {
+			return ingredientsByLimitedMagsSetup[idx][i].mags[idx] < ingredientsByLimitedMagsSetup[idx][j].mags[idx]
 		})
 	}
 	for _, potion := range Potions {
