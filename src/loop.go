@@ -2,41 +2,55 @@ package src
 
 import (
 	"fmt"
+	"log"
+	"strings"
+	"time"
 )
 
 func MainLoop() {
-	var minMags, maxMags, minIngr, maxIngr, topResultsToShow, taste, sensation, aroma, visual, sound uint16
-	var desiredPotion string
+	var minMags, maxMags, minIngr, maxIngr, topResultsToShow uint16
+	var taste, sensation, aroma, visual, sound int8
+	var desiredPotions string
 	for {
-		PrintWithBufio("Enter filter:\n{minMags, maxMags, minIngr, maxIngr, desiredPotion(empty for all), topResultsToShow, Taste, Sensation, Aroma, Visual, Sound}\n")
-		fmt.Fscan(In, &minMags, &maxMags, &minIngr, &maxIngr, &desiredPotion, &topResultsToShow, &taste, &sensation, &aroma, &visual, &sound)
-		PrintWithBufio("\n")
-		neededTraits := make([]TraitType, 0, taste+sensation+aroma+visual+sound)
-		if taste == 1 {
-			neededTraits = append(neededTraits, Taste)
+		PrintWithBufio("Enter {minMags, maxMags}: ")
+		fmt.Fscan(In, &minMags, &maxMags)
+		PrintWithBufio("Enter {minIngr, maxIngr}: ")
+		fmt.Fscan(In, &minIngr, &maxIngr)
+		PrintWithBufio(fmt.Sprintf("Enter {topResultsToShow} (if bigger than %d, will be reduced to it): ", MaxSearchResults))
+		fmt.Fscan(In, &topResultsToShow)
+		PrintWithBufio("Enter desired potions (type empty to include all). Format: {p1_p2_p3}: ")
+		fmt.Fscan(In, &desiredPotions)
+		PrintWithBufio("Enter traits (Taste, Sensation, Aroma, Visual, Sound) 1 for good only, 0 excludes bad, -1 for all: ")
+		fmt.Fscan(In, &taste, &sensation, &aroma, &visual, &sound)
+		log.Println("Starting search...")
+		desiredPotionsSlc := strings.Split(desiredPotions, "_")
+		goodPotions := make([]string, 0, len(desiredPotionsSlc))
+		for _, p := range desiredPotionsSlc {
+			if _, ok := potionsMap[p]; ok {
+				goodPotions = append(goodPotions, p)
+			}
 		}
-		if sensation == 1 {
-			neededTraits = append(neededTraits, Sensation)
-		}
-		if aroma == 1 {
-			neededTraits = append(neededTraits, Aroma)
-		}
-		if visual == 1 {
-			neededTraits = append(neededTraits, Visual)
-		}
-		if sound == 1 {
-			neededTraits = append(neededTraits, Sound)
+		if len(goodPotions) == 0 {
+			for _, p := range Potions {
+				goodPotions = append(goodPotions, p.Name)
+			}
 		}
 
-		searchResult := SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr, topResultsToShow, desiredPotion, &neededTraits)
+		start := time.Now()
+
+		searchResult := SearchPerfectCombosByParams(&SearchOpts{
+			minMags:          minMags,
+			maxMags:          maxMags,
+			minIngr:          minIngr,
+			maxIngr:          maxIngr,
+			topResultsToShow: topResultsToShow,
+			desiredPotions:   goodPotions,
+			traits:           [5]int8{taste, sensation, aroma, visual, sound},
+		})
+
 		SortAndFilterSearchResult(searchResult, topResultsToShow)
-		PrintSearchResult(searchResult)
-		run(searchResult)
 
-		// TODO optimization: recalculate maxMags based on possible maxMags
-		// TODO optimization: exclude from starting list of ingreds, ingreds with wrong magimints
-		// TODO add filter by traits (include only positive)
-		// FIXME fix bug: when encounter a multi-magimints ingredient, the result may double. F.e.:
-		// 420 420 8 8 empty 100 1 1 1 1 1 -> results in 2 identical thunder potions
+		PrintWithBufio(fmt.Sprintf("\nSearch took: %s\n", time.Since(start).String()))
+		run(searchResult)
 	}
 }

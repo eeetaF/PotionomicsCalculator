@@ -67,7 +67,7 @@ func drawShadow(dst *ebiten.Image, x, y, w, h int) {
 type Game struct {
 	sprites     map[string]*ebiten.Image
 	keys        []string // To keep order
-	results     *[]SearchResult
+	results     *[]*SearchResult
 	staticImage *ebiten.Image
 	initialized bool
 	scrollY     int
@@ -218,7 +218,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 			ingrX := infoX + 120 - g.scrollX
 			for _, ingr := range sr.Ingredients {
-				ingrImg, ok := g.sprites[ingr.Name]
+				ingrImg, ok := g.sprites[ingr.Ingredient.Name]
 				op := &ebiten.DrawImageOptions{}
 				op.GeoM.Translate(float64(ingrX), y)
 				drawShadow(g.staticImage, ingrX, int(y), 100, 100)
@@ -242,7 +242,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					qy := int(y) + 50 + qH/2
 					drawTextWithOutline(g.staticImage, "?", fontFaceLarge, qx, qy, color.Black, color.White, 2)
 				}
-				label := ingr.Name
+				label := ingr.Ingredient.Name
 				labelLines := splitLinesWordWrap(label, 13)
 				labelY := int(y) + 110
 				for i, line := range labelLines {
@@ -306,9 +306,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		barX := ingrStartX
 		barY := h - barH - 8
 		thumbX := barX
-		if maxScrollX > 0 {
-			thumbX = barX + int(float64(g.scrollX)/float64(maxScrollX)*float64(trackW-barW))
-		}
+		thumbX = barX + int(float64(g.scrollX)/float64(maxScrollX)*float64(trackW-barW))
 		// Draw track
 		track := ebiten.NewImage(trackW, barH)
 		track.Fill(color.RGBA{80, 80, 80, 120})
@@ -409,7 +407,7 @@ func splitLinesWordWrap(s string, n int) []string {
 	return lines
 }
 
-func run(sr *[]SearchResult) {
+func run(sr *[]*SearchResult) {
 	sprites, keys, err := loadSprites("data")
 	if err != nil {
 		panic(err)

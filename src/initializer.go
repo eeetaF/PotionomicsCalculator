@@ -8,6 +8,7 @@ import (
 
 var ingredientsMap map[uint16]Ingredient
 var potionsForSearchMap map[string]potionForSearch
+var potionsMap map[string]Potion
 
 // 0: all ingreds that have A magimint in it
 // 1: all ingreds that don't have A magimint in it
@@ -35,6 +36,8 @@ var Out *bufio.Writer
 
 func Initialize() {
 	ingredientsMap = make(map[uint16]Ingredient, len(Ingredients))
+	potionsMap = make(map[string]Potion, len(Potions))
+	potionsForSearchMap = make(map[string]potionForSearch, len(Potions))
 	for ingIndex, ing := range Ingredients {
 		// fill in ingredientsMap
 		ingredientsMap[uint16(ingIndex)] = ing
@@ -74,6 +77,7 @@ func Initialize() {
 		})
 	}
 	for _, potion := range Potions {
+		potionsMap[potion.Name] = potion
 		potionsForSearchMap[potion.Name] = potionForSearch{
 			delim: potion.Magimints[0] + potion.Magimints[1] + potion.Magimints[2] + potion.Magimints[3] + potion.Magimints[4],
 			mags:  potion.Magimints,
