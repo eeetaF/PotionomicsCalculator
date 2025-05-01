@@ -5,58 +5,72 @@ import (
 	"fmt"
 )
 
-var ingredientsMap map[string]Ingredient
-var potionsMap map[[5]uint16]Potion
-var potionsMapByName map[string]Potion
+var ingredientsMap map[uint16]Ingredient
+var potionsForSearchMap map[string]potionForSearch
 
-var IngredsByMags [5][]NameWithMagsAndNegTraits
+// 0: all ingreds that have A magimint in it
+// 1: all ingreds that don't have A magimint in it
+// 2: all ingreds that don't have A, B magimint in it
+// 3: all ingreds that don't have A, B, C magimint in it
+// 4: all ingreds that don't have A, B, C, D magimint in it
+var ingredientsByLimitedMagsSetup [5][]ingredientBeforeSearchSetup
 
-type NameWithMagsAndNegTraits struct {
-	name           string
-	mags           [5]uint16
-	negativeTraits *[5]bool
+type ingredientBeforeSearchSetup struct {
+	id                uint16    // uniquely identifies the ingredient
+	traits            [5]int8   // -1 for bad traits, 1 for good traits, 0 for no traits
+	mags              [5]uint16 // mags of ingredient
+	totalMags         uint16
+	quantityAvailable uint16 // number of ingreds available
 }
 
-type NameWithMags struct {
-	name string
-	mags [5]uint16
+type potionForSearch struct {
+	delim uint16 // equals to a sum of magimint units needed for potion
+	mags  [5]uint16
 }
 
 var In *bufio.Reader
 var Out *bufio.Writer
 
 func Initialize() {
-	ingredientsMap = make(map[string]Ingredient, len(Ingredients))
-	potionsMap = make(map[[5]uint16]Potion, len(Potions))
-	potionsMapByName = make(map[string]Potion, len(Potions))
-	for i := range 5 {
-		IngredsByMags[i] = make([]NameWithMagsAndNegTraits, 0, len(Ingredients))
-	}
+	ingredientsMap = make(map[uint16]Ingredient, len(Ingredients))
+	for ingIndex, ing := range Ingredients {
+		// fill in ingredientsMap
+		ingredientsMap[uint16(ingIndex)] = ing
 
-	for _, ing := range Ingredients {
-		var negativeTraits [5]bool
-		var needToAddTrait bool
-		for _, trt := range ing.Traits {
-			if !trt.IsGood {
-				negativeTraits[trt.Trait] = true
-				needToAddTrait = true
-			}
-		}
-		ingredientsMap[ing.Name] = ing
-		for i, mag := range ing.Magimints {
+		// fill in ingredientsByLimitedMagsSetup
+		var indexToPut byte
+		var traits [5]int8
+		var totalMags uint16
+		for _, mag := range ing.Magimints {
 			if mag != 0 {
-				if needToAddTrait {
-					IngredsByMags[i] = append(IngredsByMags[i], NameWithMagsAndNegTraits{ing.Name, ing.Magimints, &negativeTraits})
-				} else {
-					IngredsByMags[i] = append(IngredsByMags[i], NameWithMagsAndNegTraits{ing.Name, ing.Magimints, nil})
-				}
+				totalMags += mag
+				break
+			}
+			indexToPut++
+		}
+		for i := indexToPut + 1; i < 5; i++ {
+			totalMags += ing.Magimints[i]
+		}
+		for _, trait := range ing.Traits {
+			if trait.IsGood {
+				traits[trait.Trait] = 1
+			} else {
+				traits[trait.Trait] = -1
 			}
 		}
+		ingredientsByLimitedMagsSetup[indexToPut] = append(ingredientsByLimitedMagsSetup[indexToPut], ingredientBeforeSearchSetup{
+			id:                uint16(ingIndex),
+			traits:            traits,
+			mags:              ing.Magimints,
+			totalMags:         totalMags,
+			quantityAvailable: 65535, // for now, keep limitless
+		})
 	}
-
-	for _, pot := range Potions {
-		potionsMap[pot.Magimints] = pot
-		potionsMapByName[pot.Name] = pot
+	for _, potion := range Potions {
+		potionsForSearchMap[potion.Name] = potionForSearch{
+			delim: potion.Magimints[0] + potion.Magimints[1] + potion.Magimints[2] + potion.Magimints[3] + potion.Magimints[4],
+			mags:  potion.Magimints,
+		}
 	}
 }
 

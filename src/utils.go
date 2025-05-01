@@ -9,20 +9,23 @@ func SortAndFilterSearchResult(sr *[]SearchResult, topResultsToShow uint16) {
 	CompleteTraits(sr) // fill the traits of results
 
 	sort.Slice(*sr, func(i, j int) bool {
-		if (*sr)[i].NumberIngreds == (*sr)[j].NumberIngreds { // first, try sorting by number ingreds
-			if (*sr)[i].TotalMagimints == (*sr)[j].TotalMagimints { // then, try sorting by number magimints
-				numPointsI := getNumPoints(&(*sr)[i])
-				numPointsI -= getNumPoints(&(*sr)[j])
-				if numPointsI == 0 { // finally, try sorting by total ingreds price
-					totalIngredsPrice := getTotalIngredsPrice(&(*sr)[i])
-					totalIngredsPrice -= getTotalIngredsPrice(&(*sr)[j])
-					return totalIngredsPrice < 0
+		if (*sr)[i].ResultingPotion.Name == (*sr)[j].ResultingPotion.Name { // first, try sorting by potion name
+			if (*sr)[i].NumberIngreds == (*sr)[j].NumberIngreds { // then, try sorting by number ingreds
+				if (*sr)[i].TotalMagimints == (*sr)[j].TotalMagimints { // then, try sorting by number magimints
+					numPointsI := getNumPoints(&(*sr)[i])
+					numPointsI -= getNumPoints(&(*sr)[j])
+					if numPointsI == 0 { // finally, try sorting by total ingreds price
+						totalIngredsPrice := getTotalIngredsPrice(&(*sr)[i])
+						totalIngredsPrice -= getTotalIngredsPrice(&(*sr)[j])
+						return totalIngredsPrice < 0
+					}
+					return numPointsI > 0
 				}
-				return numPointsI > 0
+				return (*sr)[i].TotalMagimints > (*sr)[j].TotalMagimints
 			}
-			return (*sr)[i].TotalMagimints > (*sr)[j].TotalMagimints
+			return (*sr)[i].NumberIngreds > (*sr)[j].NumberIngreds
 		}
-		return (*sr)[i].NumberIngreds > (*sr)[j].NumberIngreds
+		return (*sr)[i].ResultingPotion.Name < (*sr)[j].ResultingPotion.Name
 	})
 	*sr = (*sr)[:min(int(topResultsToShow), len(*sr))]
 }
