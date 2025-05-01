@@ -35,6 +35,8 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 30, 0, 0, 0}, Plant, "Reef Radish", 32, []TraitStruct{
 		{Taste, false}, {Sound, true}}},
 	{[5]uint16{0, 30, 0, 0, 0}, Plant, "Mandragon Root", 34, []TraitStruct{}},
+	{[5]uint16{0, 48, 0, 0, 0}, Plant, "Acid Rutabaga", 54, []TraitStruct{
+		{Taste, false}, {Sound, true}}},
 	{[5]uint16{0, 32, 0, 32, 0}, Plant, "Daredevil Pepper", 90, []TraitStruct{}},
 	{[5]uint16{10, 0, 20, 0, 30}, Plant, "Mosquito Plant", 105, []TraitStruct{}},
 	{[5]uint16{20, 20, 15, 0, 15}, Plant, "Squid Vine", 135, []TraitStruct{}},
@@ -188,12 +190,14 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 0, 30, 10, 0}, Essence, "Raiju Droppings", 55, []TraitStruct{}},
 	{[5]uint16{32, 0, 32, 0, 0}, Essence, "Ogre's Shadow", 74, []TraitStruct{}},
 	{[5]uint16{0, 0, 30, 20, 10}, Essence, "Dropspider's Shadow", 90, []TraitStruct{}},
+	{[5]uint16{0, 0, 64, 32, 0}, Essence, "Chimera Waste", 118, []TraitStruct{
+		{Aroma, false}}},
 	{[5]uint16{0, 48, 32, 16, 0}, Essence, "Bioplasm", 125, []TraitStruct{
 		{Visual, false}, {Sound, true}}},
 
 	// Gem
 	{[5]uint16{0, 4, 4, 0, 0}, Gem, "Pixiedust Diamond", 14, []TraitStruct{}},
-	{[5]uint16{0, 12, 0, 0, 0}, Gem, "Murkwater Pearl", 27, []TraitStruct{
+	{[5]uint16{0, 0, 0, 12, 0}, Gem, "Murkwater Pearl", 27, []TraitStruct{
 		{Visual, true}}},
 	{[5]uint16{0, 12, 12, 0, 0}, Gem, "Golem's-Eye Diamond", 28, []TraitStruct{}},
 	{[5]uint16{0, 0, 0, 20, 0}, Gem, "Shadowveil Pearl", 38, []TraitStruct{
