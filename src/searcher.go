@@ -84,6 +84,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]SearchResult {
 						}
 						copy(newCu.ingredsUsed, cu.ingredsUsed)
 						for i = range 5 {
+							newCu.quantityAvailable[i] = make([]uint16, len(cu.quantityAvailable[i]))
 							copy(newCu.quantityAvailable[i], cu.quantityAvailable[i])
 						}
 						stack = append(stack, cu)
