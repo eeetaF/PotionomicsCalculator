@@ -175,7 +175,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{30, 0, 0, 0, 10}, Mineral, "Sea Salt", 55, []TraitStruct{}},
 	{[5]uint16{24, 0, 0, 0, 8}, Mineral, "Rock Salt", 68, []TraitStruct{
 		{Taste, true}, {Visual, true}}},
-	{[5]uint16{32, 32, 0, 0, 8}, Mineral, "Scimitar Crab's Shell", 76, []TraitStruct{}},
+	{[5]uint16{32, 32, 0, 0, 0}, Mineral, "Scimitar Crab's Shell", 76, []TraitStruct{}},
 	{[5]uint16{30, 20, 0, 0, 10}, Mineral, "Abyssalite", 79, []TraitStruct{}},
 	{[5]uint16{48, 32, 0, 16, 0}, Mineral, "Supernalite", 134, []TraitStruct{
 		{Taste, false}, {Visual, true}}},
