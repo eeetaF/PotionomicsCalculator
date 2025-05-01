@@ -1,213 +1,404 @@
 package src
 
 import (
-	"context"
-	"fmt"
-	"runtime"
-	"sync"
-	"time"
+	"log"
+	"sort"
 )
+
+const MaxSearchResults = 200
 
 type SearchResult struct {
 	ResultingPotion Potion
-	Ingredients     map[string]uint16
+	Ingredients     []IngredientWithQuantity
 	TotalMagimints  uint16
 	NumberIngreds   uint16
-	Traits          []TraitStruct // uploads after
+	Traits          []TraitStruct
 }
 
-var stack []searchUnit
-var stackMu sync.Mutex
+type IngredientWithQuantity struct {
+	Quantity   uint16
+	Ingredient Ingredient
+}
 
-func SearchPerfectCombosByParams(minMags, maxMags, minIngr, maxIngr uint16, desiredPotion string, neededTraits *[]TraitType) *[]SearchResult {
-	var neededTraitsArr [5]bool
-	for _, trait := range *neededTraits {
-		neededTraitsArr[trait] = true
+type SearchOpts struct {
+	minMags          uint16
+	maxMags          uint16
+	minIngr          uint16
+	maxIngr          uint16
+	topResultsToShow uint16
+	desiredPotions   []string
+	traits           [5]int8 // -1 for all, 0 excludes bad trait, 1 includes good trait
+}
+
+func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
+	if len(opts.desiredPotions) == 0 {
+		return &[]*SearchResult{}
 	}
-	var localIngreds [5][]NameWithMags
-	CompleteLocalIndreds(&localIngreds, &neededTraitsArr)
+	opts.minIngr = max(opts.minIngr, 1)
 
-	stack = make([]searchUnit, 0, 10000)
-	searchResult := make([]SearchResult, 0, 1000)
-	var wg sync.WaitGroup
+	var i, result, lastI byte                                        // used in calculations as index
+	var newTotalMags, delim, unit, minMagsLocal, maxMagsLocal uint16 // used in calculations
+	var isLastI, isLastJ bool                                        // used in calculations
+	var localMags, newMags [5]uint16                                 // used in calculations
+	var pot potionForSearch                                          // used in calculations
+	var localTraits [5]int8                                          // used in calculations
+	var currIngTrait int8                                            // used in calculations
 
-	start := time.Now()
+	opts.topResultsToShow = min(opts.topResultsToShow, MaxSearchResults)
+	results := make([]*SearchResult, 0, opts.topResultsToShow*2)
 
-	// Инициализация начального стека
-	if pt, ok := potionsMapByName[desiredPotion]; ok {
-		wg.Add(1)
-		stack = append(stack, searchUnit{desiredPotion: pt.Magimints})
-	} else {
-		for mags := range potionsMap {
-			wg.Add(1)
-			stack = append(stack, searchUnit{desiredPotion: mags})
-		}
-	}
+	neededGoodTraits := completeNeededGoodTraits(&opts.traits) // shared among all potions
 
-	var mu sync.Mutex
+	for _, p := range opts.desiredPotions { //  loop - potions
+		pot = potionsForSearchMap[p]
+		delim = pot.delim
+		// make sure that maxMagsLocal is a multiple of delim
+		minMagsLocal = max(opts.minMags, delim)
+		maxMagsLocal = (opts.maxMags / delim) * delim
+		localIngredsByMags := getIngredientDuringSearch(&pot, &opts.traits)
+		lastI = getLastI(&pot)
 
-	numWorkers := runtime.NumCPU()
+		for numIngreds := opts.maxIngr; numIngreds >= opts.minIngr; numIngreds-- { // loop - ingredients
+			for numMags := maxMagsLocal; numMags >= minMagsLocal; numMags -= min(delim, numMags) { // loop - magimints
 
-	ctx, cancelFn := context.WithCancel(context.Background())
-	for w := 0; w < numWorkers; w++ {
-		go func() {
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-					stackMu.Lock()
-					if len(stack) == 0 {
-						stackMu.Unlock()
+				// todo optimization - reuse calculated mags (they repeat each iter of numIgreds)
+				unit = numMags / delim
+				localMags = [5]uint16{
+					pot.mags[0] * unit,
+					pot.mags[1] * unit,
+					pot.mags[2] * unit,
+					pot.mags[3] * unit,
+					pot.mags[4] * unit,
+				}
+
+				// here, we finally have fixed target potion, num of mags and num of ingredients.
+				stack := make([]*SearchUnit, 0, 1000)
+				stack = append(stack, completeSearchUnit(opts))
+
+				for len(stack) > 0 {
+					cu := stack[len(stack)-1]
+					stack = stack[:len(stack)-1]
+
+					isLastJ = true
+
+					for cu.i != 5 && uint16(len(localIngredsByMags[cu.i])) == cu.j { // skip finished mags
+						cu.i++
+						cu.j = 0
+						isLastJ = false
+					}
+					if cu.i == 5 { // skip last
 						continue
 					}
-					currentUnit := stack[len(stack)-1]
-					stack = stack[:len(stack)-1]
-					stackMu.Unlock()
-					processUnit(currentUnit, minMags, maxMags, minIngr, maxIngr, &searchResult, &mu, &wg, &localIngreds)
+					if isLastJ {
+						isLastJ = uint16(len(localIngredsByMags[cu.i])) == cu.j+1
+					}
+					isLastI = cu.i == lastI
+
+					if cu.j != 0 && (cu.mags[cu.i]+localIngredsByMags[cu.i][cu.j].mags[cu.i] > localMags[cu.i]) {
+						continue
+					}
+
+					if !isLastJ { // there are more ingreds with the same mag type, we may skip this ingr
+						newCu := &SearchUnit{
+							i:                 cu.i,
+							j:                 cu.j + 1,
+							mags:              cu.mags, // safe, copies the array
+							quantityAvailable: [5][]uint16{},
+							ingredsUsed:       make([]usedIngredient, len(cu.ingredsUsed), cap(cu.ingredsUsed)),
+							totalMags:         cu.totalMags,
+							totalIngreds:      cu.totalIngreds,
+						}
+						copy(newCu.ingredsUsed, cu.ingredsUsed)
+						for i = range 5 {
+							newCu.quantityAvailable[i] = make([]uint16, len(cu.quantityAvailable[i]))
+							copy(newCu.quantityAvailable[i], cu.quantityAvailable[i])
+						}
+						stack = append(stack, newCu)
+					}
+
+					// at this point, i and j are valid according to localIngredsByMags
+					var ingredsToAdd uint16 = 1
+					for ; ingredsToAdd <= (numIngreds - cu.totalIngreds); ingredsToAdd++ {
+						if cu.quantityAvailable[cu.i][cu.j] < ingredsToAdd {
+							break // not enough such ingreds left
+						}
+
+						newTotalMags = cu.totalMags + ingredsToAdd*localIngredsByMags[cu.i][cu.j].totalMags
+						if newTotalMags > numMags || // total mags is bigger than numMags
+							(newTotalMags < numMags && ingredsToAdd == (numIngreds-cu.totalIngreds)) { // total mags is less and no more ingreds to add
+							break
+						}
+						if newTotalMags != numMags && isLastI && isLastJ { // mags not equal, but ingred is the last in both lists
+							continue
+						}
+
+						newMags = [5]uint16{
+							cu.mags[0] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[0],
+							cu.mags[1] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[1],
+							cu.mags[2] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[2],
+							cu.mags[3] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[3],
+							cu.mags[4] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[4],
+						}
+
+						// 0 - default, 1 - bad, 2 - mag finished, 3 - good. IMPORTANT: regards only mags. Not traits / numIngreds etc.
+						result = getNewMagsStatus(&newMags, &localMags, cu.i)
+
+						if result == 1 {
+							break
+						}
+						if result == 0 && isLastJ { // last elem in the list and current mag is not finished
+							continue
+						}
+						if result == 3 {
+							// need to check for good traits, numIngreds
+							if ingredsToAdd+cu.totalIngreds != numIngreds {
+								break
+							}
+							// setup resulting traits
+							localTraits = getTraits(&cu.ingredsUsed, localIngredsByMags)
+							for traitIdx, trait := range localTraits {
+								if trait != -1 {
+									currIngTrait = localIngredsByMags[cu.i][cu.j].traits[traitIdx]
+									if currIngTrait == -1 {
+										localTraits[traitIdx] = -1
+										continue
+									}
+									localTraits[traitIdx] = max(trait, currIngTrait)
+								}
+							}
+							// check if all resulting traits are valid according to the search
+							for _, trait := range *neededGoodTraits {
+								if localTraits[trait] != 1 {
+									result = 1
+									break
+								}
+							}
+							if result == 1 {
+								break // bad traits
+							}
+
+							// all is good, add to results
+							cu.ingredsUsed = append(cu.ingredsUsed, usedIngredient{
+								i:        cu.i,
+								j:        cu.j,
+								quantity: ingredsToAdd,
+							})
+
+							trts := make([]TraitStruct, 0, 5)
+							for trtIdx, val := range localTraits {
+								if val == -1 {
+									trts = append(trts, TraitStruct{TraitType(trtIdx), false})
+								} else if val == 1 {
+									trts = append(trts, TraitStruct{TraitType(trtIdx), true})
+								}
+							}
+							results = append(results, &SearchResult{
+								ResultingPotion: potionsMap[p],
+								Ingredients:     usedIngredientsToSortedIngredients(&cu.ingredsUsed, localIngredsByMags),
+								TotalMagimints:  numMags,
+								NumberIngreds:   numIngreds,
+								Traits:          trts,
+							})
+							if len(results)%10 == 0 {
+								log.Printf("Found %d results\n", len(results))
+							}
+							break
+						}
+
+						// Here, all checks are passed. We just add the ingredient
+						newCu := &SearchUnit{
+							i:                 cu.i,
+							j:                 cu.j + 1,
+							mags:              newMags, // safe, copies the array
+							ingredsUsed:       make([]usedIngredient, len(cu.ingredsUsed), cap(cu.ingredsUsed)),
+							quantityAvailable: [5][]uint16{},
+							totalMags:         newTotalMags,
+							totalIngreds:      cu.totalIngreds + ingredsToAdd,
+						}
+						if result == 2 {
+							newCu.i++
+							newCu.j = 0
+						}
+						copy(newCu.ingredsUsed, cu.ingredsUsed)
+						newCu.ingredsUsed = append(newCu.ingredsUsed, usedIngredient{
+							cu.i,
+							cu.j,
+							ingredsToAdd,
+						})
+						for i = range 5 {
+							newCu.quantityAvailable[i] = make([]uint16, len(cu.quantityAvailable[i]))
+							copy(newCu.quantityAvailable[i], cu.quantityAvailable[i])
+						}
+						stack = append(stack, newCu)
+					}
+				}
+
+				if len(results) >= int(opts.topResultsToShow) {
+					return &results // enough results found
 				}
 			}
-		}()
+		}
 	}
-
-	wg.Wait()
-	cancelFn()
-	elapsed := time.Since(start)
-	fmt.Println(elapsed)
-
-	return &searchResult
+	return &results
 }
 
-func processUnit(currentUnit searchUnit, minMags, maxMags, minIngr, maxIngr uint16, searchResult *[]SearchResult, mu *sync.Mutex, wg *sync.WaitGroup, localIngreds *[5][]NameWithMags) {
-	defer wg.Done()
-	var i, j uint16
+func usedIngredientsToSortedIngredients(ings *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) []IngredientWithQuantity {
+	newIngs := make([]IngredientWithQuantity, 0, len(*ings))
 
-	if currentUnit.numIngreds > maxIngr || currentUnit.numMagimints > maxMags {
-		return
-	}
-	magIdx, ok := getNeededMag(&currentUnit.desiredPotion, &currentUnit.magimints)
-	if !ok {
-		return
-	}
-	if magIdx == 5 && currentUnit.numIngreds >= minIngr && currentUnit.numMagimints >= minMags {
-		sr := SearchResult{
-			ResultingPotion: potionsMap[currentUnit.desiredPotion],
-			TotalMagimints:  currentUnit.numMagimints,
-			NumberIngreds:   currentUnit.numIngreds,
-			Ingredients:     make(map[string]uint16, len(currentUnit.ingredients)),
+	sort.Slice(*ings, func(i, j int) bool {
+		if localIngredsByMags[(*ings)[i].i][(*ings)[i].j].totalMags == localIngredsByMags[(*ings)[j].i][(*ings)[j].j].totalMags {
+			// total mags are equal
+			return (*ings)[i].quantity > (*ings)[j].quantity
 		}
-		for _, ingr := range currentUnit.ingredients {
-			sr.Ingredients[ingr.name] = ingr.quantity
+		return localIngredsByMags[(*ings)[i].i][(*ings)[i].j].totalMags > localIngredsByMags[(*ings)[j].i][(*ings)[j].j].totalMags
+	})
+
+	for _, ingUsed := range *ings {
+		newIngs = append(newIngs, IngredientWithQuantity{
+			Quantity:   ingUsed.quantity,
+			Ingredient: Ingredients[localIngredsByMags[ingUsed.i][ingUsed.j].id],
+		})
+	}
+	return newIngs
+}
+
+func getTraits(ingredsUsed *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) [5]int8 {
+	var result [5]int8
+	for _, ingred := range *ingredsUsed {
+		for i, trait := range localIngredsByMags[ingred.i][ingred.j].traits {
+			if trait == -1 {
+				result[i] = -1
+			} else if trait == 1 && result[i] != -1 {
+				result[i] = 1
+			}
 		}
-		mu.Lock()
-		*searchResult = append(*searchResult, sr)
-		mu.Unlock()
+	}
+	return result
+}
+
+// 0 - default result
+// 1 - status bad: any of mags bigger than expected
+// 2 - status finished: current magimint finished, but any other is not
+// 3 - status good: a solution found, add it to the list
+func getNewMagsStatus(newMags *[5]uint16, expectedMags *[5]uint16, currentMag byte) byte {
+	good, finished := true, false
+
+	if newMags[currentMag] > expectedMags[currentMag] {
+		return 1
+	}
+	if newMags[currentMag] == expectedMags[currentMag] {
+		finished = true
+	}
+	currentMag++
+
+	for ; currentMag < 5; currentMag++ {
+		if newMags[currentMag] > expectedMags[currentMag] {
+			return 1
+		}
+		if newMags[currentMag] < expectedMags[currentMag] {
+			good = false
+		}
+	}
+	if !finished {
+		return 0
+	}
+	if good {
+		return 3
+	}
+	return 2
+}
+
+func getLastI(p *potionForSearch) byte {
+	var i byte
+	for i = 4; i != 0; i-- {
+		if p.mags[i] != 0 {
+			return i
+		}
+	}
+	return 0
+}
+
+func completeNeededGoodTraits(traits *[5]int8) *[]TraitType {
+	var neededGoodTraits []TraitType
+	for i := range traits {
+		if traits[i] == 1 {
+			neededGoodTraits = append(neededGoodTraits, TraitType(i))
+		}
+	}
+	return &neededGoodTraits
+}
+
+func completeSearchUnit(opts *SearchOpts) *SearchUnit {
+	var quantityAvailable [5][]uint16
+	for i := range ingredientsByLimitedMagsSetup {
+		for _, ingred := range ingredientsByLimitedMagsSetup[i] {
+			quantityAvailable[i] = append(quantityAvailable[i], ingred.quantityAvailable)
+		}
 	}
 
-	numIngredsToAdd := maxIngr - currentUnit.numIngreds
-	if numIngredsToAdd == 0 {
-		return
-	}
-
-	if magIdx == 5 {
-		for i = 0; i < 4; i++ {
-			if currentUnit.desiredPotion[i] != 0 {
-				break
-			}
-		}
-		magIdx = i
-	}
-	for i = currentUnit.minIngredToUse[magIdx]; int(i) < len(localIngreds[magIdx]); i++ {
-		ingrInfo := localIngreds[magIdx][i]
-		ingrName := ingrInfo.name
-		for idx, val := range ingrInfo.mags {
-			if val > 0 && currentUnit.desiredPotion[idx] == 0 {
-				goto end
-			}
-		}
-		for _, ingr := range currentUnit.ingredients {
-			if ingr.name == ingrName {
-				goto end
-			}
-		}
-		for j = 1; j <= numIngredsToAdd; j++ {
-			if j*ingrInfo.mags[magIdx]+currentUnit.numMagimints > maxMags {
-				break
-			}
-			if j == numIngredsToAdd && j*ingrInfo.mags[magIdx]+currentUnit.numMagimints < minMags {
-				break
-			}
-			newUnit := searchUnit{
-				desiredPotion:  currentUnit.desiredPotion,
-				magimints:      currentUnit.magimints,
-				numIngreds:     currentUnit.numIngreds,
-				numMagimints:   currentUnit.numMagimints,
-				minIngredToUse: currentUnit.minIngredToUse,
-				ingredients:    make([]nameWithQuantity, len(currentUnit.ingredients)),
-			}
-			copy(newUnit.ingredients, currentUnit.ingredients)
-			newUnit.minIngredToUse[magIdx] = i
-			addIngred(&ingrInfo, &newUnit, j)
-
-			wg.Add(1)
-			stackMu.Lock()
-			stack = append(stack, newUnit)
-			stackMu.Unlock()
-		}
-	end:
+	return &SearchUnit{
+		quantityAvailable: quantityAvailable,
+		ingredsUsed:       make([]usedIngredient, 0, opts.maxIngr),
 	}
 }
 
-func addIngred(ingredInfo *NameWithMags, addTo *searchUnit, quantity uint16) {
-	for i := range 5 {
-		addTo.magimints[i] += ingredInfo.mags[i] * quantity
-		addTo.numMagimints += ingredInfo.mags[i] * quantity
-	}
-	addTo.ingredients = append(addTo.ingredients, nameWithQuantity{ingredInfo.name, quantity})
-	addTo.numIngreds += quantity
-}
-
-func getNeededMag(desiredPotion *[5]uint16, magimints *[5]uint16) (uint16, bool) {
-	var maxMagIdx, maxMagValue uint16 = 100, 0
-	for i, mag := range magimints {
-		if mag > maxMagValue {
-			maxMagIdx = uint16(i)
-			maxMagValue = mag
+func getIngredientDuringSearch(p *potionForSearch, traits *[5]int8) *[5][]ingredientDuringSearch {
+	var ingredientsByMags [5][]ingredientDuringSearch
+	for i := range ingredientsByLimitedMagsSetup {
+		if p.mags[i] == 0 {
+			continue
 		}
-	}
-	if maxMagIdx == 100 {
-		for i, val := range desiredPotion {
-			if val != 0 {
-				return uint16(i), true
+		for _, ingred := range ingredientsByLimitedMagsSetup[i] {
+			var badIngred bool
+			for j := i; j < 5; j++ {
+				if ingred.mags[j] != 0 && p.mags[j] == 0 {
+					badIngred = true
+					break
+				}
 			}
+			if !badIngred {
+				for j := range ingred.traits {
+					if (*traits)[j] >= 0 && ingred.traits[j] == -1 {
+						badIngred = true
+						break
+					}
+				}
+			}
+			if badIngred {
+				continue
+			}
+			// ingred is good, can be added
+			ingDuringSearch := ingredientDuringSearch{
+				id:        ingred.id,
+				traits:    ingred.traits,
+				mags:      ingred.mags,
+				totalMags: ingred.totalMags,
+			}
+			ingredientsByMags[i] = append(ingredientsByMags[i], ingDuringSearch)
 		}
 	}
-	delim := desiredPotion[maxMagIdx]
-	if magimints[maxMagIdx]%delim != 0 {
-		return maxMagIdx, true
-	}
-	unit := magimints[maxMagIdx] / delim
-	for i, mag := range magimints {
-		if desiredPotion[i]*unit > mag {
-			return uint16(i), true
-		} else if desiredPotion[i]*unit < mag {
-			return maxMagIdx, true
-		}
-	}
-	return 5, true
+	return &ingredientsByMags
 }
 
-type searchUnit struct {
-	desiredPotion [5]uint16
-	magimints     [5]uint16
-	numIngreds    uint16
-	numMagimints  uint16
-	// using map here is better by time complexity, but actually it's slower for reasonable number of ingreds
-	ingredients    []nameWithQuantity
-	minIngredToUse [5]uint16
+type SearchUnit struct {
+	i                 byte   // indexes in localIngredsByMags
+	j                 uint16 // indexes in localIngredsByMags
+	mags              [5]uint16
+	quantityAvailable [5][]uint16
+	ingredsUsed       []usedIngredient
+	totalMags         uint16
+	totalIngreds      uint16
 }
 
-type nameWithQuantity struct {
-	name     string
+type usedIngredient struct {
+	i        byte   // first index in ingredientDuringSearch
+	j        uint16 // second index in ingredientDuringSearch
 	quantity uint16
+}
+
+type ingredientDuringSearch struct {
+	id        uint16    // uniquely identifies the ingredient in Ingredients
+	traits    [5]int8   // -1 for bad traits, 1 for good traits, 0 for no traits
+	mags      [5]uint16 // mags of ingredient
+	totalMags uint16
 }

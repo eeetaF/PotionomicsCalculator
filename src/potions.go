@@ -28,7 +28,7 @@ var Potions = []Potion{
 	{[5]uint16{3, 0, 0, 3, 4}, EPT, "Dowsing"},
 	// Cures
 	{[5]uint16{2, 0, 1, 1, 0}, CPT, "Poison"},
-	{[5]uint16{1, 1, 0, 1, 0}, CPT, "Drowsiness"},
+	{[5]uint16{1, 1, 0, 2, 0}, CPT, "Drowsiness"},
 	{[5]uint16{1, 0, 2, 0, 1}, CPT, "Petrification"},
 	{[5]uint16{0, 2, 1, 0, 1}, CPT, "Silence"},
 }
