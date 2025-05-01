@@ -6,11 +6,45 @@ import (
 )
 
 func SortAndFilterSearchResult(sr *[]SearchResult, topResultsToShow uint16) {
+	CompleteTraits(sr) // fill the traits of results
+
 	sort.Slice(*sr, func(i, j int) bool {
-		return (*sr)[i].TotalMagimints > (*sr)[j].TotalMagimints
+		if (*sr)[i].NumberIngreds == (*sr)[j].NumberIngreds { // first, try sorting by number ingreds
+			if (*sr)[i].TotalMagimints == (*sr)[j].TotalMagimints { // then, try sorting by number magimints
+				numPointsI := getNumPoints(&(*sr)[i])
+				numPointsI -= getNumPoints(&(*sr)[j])
+				if numPointsI == 0 { // finally, try sorting by total ingreds price
+					totalIngredsPrice := getTotalIngredsPrice(&(*sr)[i])
+					totalIngredsPrice -= getTotalIngredsPrice(&(*sr)[j])
+					return totalIngredsPrice < 0
+				}
+				return numPointsI > 0
+			}
+			return (*sr)[i].TotalMagimints > (*sr)[j].TotalMagimints
+		}
+		return (*sr)[i].NumberIngreds > (*sr)[j].NumberIngreds
 	})
 	*sr = (*sr)[:min(int(topResultsToShow), len(*sr))]
-	CompleteTraits(sr)
+}
+
+func getTotalIngredsPrice(sr *SearchResult) int {
+	var cost int
+	for _, ingr := range sr.Ingredients {
+		cost += ingredientsMap[ingr.Name].Price
+	}
+	return cost
+}
+
+func getNumPoints(sr *SearchResult) int8 {
+	var numPoints int8
+	for _, trait := range sr.Traits {
+		if trait.IsGood {
+			numPoints++
+		} else {
+			numPoints--
+		}
+	}
+	return numPoints
 }
 
 func PrintSearchResult(sr *[]SearchResult) {

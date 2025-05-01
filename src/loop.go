@@ -36,7 +36,6 @@ func MainLoop() {
 		// TODO optimization: recalculate maxMags based on possible maxMags
 		// TODO optimization: exclude from starting list of ingreds, ingreds with wrong magimints
 		// TODO add filter by traits (include only positive)
-		// TODO secondary sort by traits / price
 		// FIXME fix bug: when encounter a multi-magimints ingredient, the result may double. F.e.:
 		// 420 420 8 8 empty 100 1 1 1 1 1 -> results in 2 identical thunder potions
 	}
