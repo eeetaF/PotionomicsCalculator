@@ -104,8 +104,8 @@ func (g *Game) Update() error {
 		w, _ := ebiten.WindowSize()
 		maxIngr := 0
 		for _, sr := range *g.results {
-			if len(sr.Ingredients) > maxIngr {
-				maxIngr = len(sr.Ingredients)
+			if len(*sr.Ingredients) > maxIngr {
+				maxIngr = len(*sr.Ingredients)
 			}
 		}
 		colSpacing := 120
@@ -141,8 +141,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	maxIngr := 0
 	if g.results != nil {
 		for _, sr := range *g.results {
-			if len(sr.Ingredients) > maxIngr {
-				maxIngr = len(sr.Ingredients)
+			if len(*sr.Ingredients) > maxIngr {
+				maxIngr = len(*sr.Ingredients)
 			}
 		}
 	}
@@ -218,7 +218,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 
 			ingrX := infoX + 120 - g.scrollX
-			for _, ingr := range sr.Ingredients {
+			for _, ingr := range *sr.Ingredients {
 				ingrImg, ok := g.sprites[ingr.Ingredient.Name]
 				op := &ebiten.DrawImageOptions{}
 				op.GeoM.Translate(float64(ingrX), y)

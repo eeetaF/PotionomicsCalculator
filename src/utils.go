@@ -29,7 +29,7 @@ func SortAndFilterSearchResult(sr *[]*SearchResult, topResultsToShow uint16) {
 
 func getTotalIngredsPrice(sr *SearchResult) int {
 	var cost int
-	for _, ingr := range sr.Ingredients {
+	for _, ingr := range *sr.Ingredients {
 		cost += ingr.Ingredient.Price
 	}
 	return cost

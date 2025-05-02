@@ -9,7 +9,7 @@ const MaxSearchResults = 200
 
 type SearchResult struct {
 	ResultingPotion Potion
-	Ingredients     []IngredientWithQuantity
+	Ingredients     *[]IngredientWithQuantity
 	TotalMagimints  uint16
 	NumberIngreds   uint16
 	Traits          []TraitStruct
@@ -196,7 +196,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 								Traits:          trts,
 							})
 							if len(results)%10 == 0 {
-								log.Printf("[INFO] Found %d results\n", len(results))
+								log.Printf("[INFO] Results found: %d\n", len(results))
 								if len(results) > int(10*opts.topResultsToShow) {
 									return &results // enough results found
 								}
@@ -236,7 +236,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 	return &results
 }
 
-func usedIngredientsToSortedIngredients(ings *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) []IngredientWithQuantity {
+func usedIngredientsToSortedIngredients(ings *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) *[]IngredientWithQuantity {
 	newIngs := make([]IngredientWithQuantity, 0, len(*ings))
 
 	sort.Slice(*ings, func(i, j int) bool {
@@ -253,7 +253,7 @@ func usedIngredientsToSortedIngredients(ings *[]usedIngredient, localIngredsByMa
 			Ingredient: Ingredients[localIngredsByMags[ingUsed.i][ingUsed.j].id],
 		})
 	}
-	return newIngs
+	return &newIngs
 }
 
 func getTraits(ingredsUsed *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) [5]int8 {
