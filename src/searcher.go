@@ -38,9 +38,11 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 
 	// these vars are used in calculations. All of them are being constantly reused.
 	var result, lastI byte
-	var newTotalMags, delim, unit, minMagsLocal, maxMagsLocal, numMags, numIngreds, ingredsToAdd uint16
+	var i, newTotalMags, delim, minMagsLocal, maxMagsLocal, numMags, numIngreds, ingredsToAdd, lenLocalMagsSlice uint16
 	var isLastI, isLastJ bool
-	var localMags, newMags [5]uint16
+	var newMags [5]uint16
+	var localMags *[5]uint16
+	var localMagsSlice []*[5]uint16
 	var pot potionForSearch
 	var localTraits [5]int8
 	var currIngTrait int8
@@ -60,18 +62,22 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 		localIngredsByMags := getIngredientDuringSearch(&pot, &opts.traits)
 		lastI = getLastI(&pot)
 
+		lenLocalMagsSlice = (maxMagsLocal-minMagsLocal)/delim + 1
+		localMagsSlice = make([]*[5]uint16, 0, lenLocalMagsSlice)
+		for i = range lenLocalMagsSlice {
+			localMagsSlice = append(localMagsSlice, &[5]uint16{
+				pot.mags[0] * (minMagsLocal/delim + i),
+				pot.mags[1] * (minMagsLocal/delim + i),
+				pot.mags[2] * (minMagsLocal/delim + i),
+				pot.mags[3] * (minMagsLocal/delim + i),
+				pot.mags[4] * (minMagsLocal/delim + i),
+			})
+		}
+
 		for numIngreds = opts.maxIngr; numIngreds >= opts.minIngr; numIngreds-- { // loop - ingredients
 			for numMags = maxMagsLocal; numMags >= minMagsLocal; numMags -= min(delim, numMags) { // loop - magimints
 
-				// todo optimization - reuse calculated mags (they repeat each iter of numIgreds)
-				unit = numMags / delim
-				localMags = [5]uint16{
-					pot.mags[0] * unit,
-					pot.mags[1] * unit,
-					pot.mags[2] * unit,
-					pot.mags[3] * unit,
-					pot.mags[4] * unit,
-				}
+				localMags = localMagsSlice[(numMags-minMagsLocal)/delim]
 
 				// here, we finally have fixed target potion, num of mags and num of ingredients.
 				stack := make([]*SearchUnit, 0, 1000)
@@ -137,7 +143,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 						}
 
 						// 0 - default, 1 - bad, 2 - mag finished, 3 - good. IMPORTANT: regards only mags. Not traits / numIngreds etc.
-						result = getNewMagsStatus(&newMags, &localMags, cu.i)
+						result = getNewMagsStatus(&newMags, localMags, cu.i)
 
 						if result == 1 {
 							break
