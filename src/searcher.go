@@ -348,14 +348,13 @@ func getIngredientDuringSearch(p *potionForSearch, traits *[5]int8) *[5][]ingred
 				continue
 			}
 			// ingred is good, can be added
-			ingDuringSearch := ingredientDuringSearch{
+			ingredientsByMags[i] = append(ingredientsByMags[i], ingredientDuringSearch{
 				id:                ingred.id,
 				traits:            ingred.traits,
 				mags:              ingred.mags,
 				totalMags:         ingred.totalMags,
 				quantityAvailable: ingred.quantityAvailable,
-			}
-			ingredientsByMags[i] = append(ingredientsByMags[i], ingDuringSearch)
+			})
 		}
 	}
 	return &ingredientsByMags
