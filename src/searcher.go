@@ -77,10 +77,10 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 		for numIngreds = opts.maxIngr; numIngreds >= opts.minIngr; numIngreds-- { // loop - ingredients
 			for numMags = maxMagsLocal; numMags >= minMagsLocal; numMags -= min(delim, numMags) { // loop - magimints
 
-				localMags = localMagsSlice[(numMags-minMagsLocal)/delim]
-
 				// here, we finally have fixed target potion, num of mags and num of ingredients.
-				stack := make([]*SearchUnit, 0, 1000)
+				localMags = localMagsSlice[(numMags-minMagsLocal)/delim]
+				// I can't prove why, but max stack's len has never exceeded numIngreds
+				stack := make([]*SearchUnit, 0, numIngreds)
 				stack = append(stack, &SearchUnit{ingredsUsed: make([]usedIngredient, 0, opts.maxIngr)})
 
 				for len(stack) > 0 {
@@ -202,7 +202,10 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 								Traits:          trts,
 							})
 							if len(results)%10 == 0 {
-								log.Printf("Found %d results\n", len(results))
+								log.Printf("[INFO] Found %d results\n", len(results))
+								if len(results) > int(10*opts.topResultsToShow) {
+									return &results // enough results found
+								}
 							}
 							break
 						}
