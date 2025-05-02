@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-const MaxSearchResults = 200
+const MaxSearchResults = 10000
 
 type SearchResult struct {
 	ResultingPotion Potion
