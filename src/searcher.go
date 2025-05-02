@@ -143,7 +143,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 						}
 
 						// 0 - default, 1 - bad, 2 - mag finished, 3 - good. IMPORTANT: regards only mags. Not traits / numIngreds etc.
-						result = getNewMagsStatus(&newMags, localMags, cu.i)
+						result = getNewMagsStatus(&newMags, localMags, cu.i, lastI)
 
 						if result == 1 {
 							break
@@ -280,7 +280,7 @@ func getTraits(ingredsUsed *[]usedIngredient, localIngredsByMags *[5][]ingredien
 // 1 - status bad: any of mags bigger than expected
 // 2 - status finished: current magimint finished, but any other is not
 // 3 - status good: a solution found, add it to the list
-func getNewMagsStatus(newMags *[5]uint16, expectedMags *[5]uint16, currentMag byte) byte {
+func getNewMagsStatus(newMags *[5]uint16, expectedMags *[5]uint16, currentMag, lastI byte) byte {
 	good, finished := true, false
 
 	if newMags[currentMag] > expectedMags[currentMag] {
@@ -291,7 +291,7 @@ func getNewMagsStatus(newMags *[5]uint16, expectedMags *[5]uint16, currentMag by
 	}
 	currentMag++
 
-	for ; currentMag < 5; currentMag++ {
+	for ; currentMag <= lastI; currentMag++ {
 		if newMags[currentMag] > expectedMags[currentMag] {
 			return 1
 		}
