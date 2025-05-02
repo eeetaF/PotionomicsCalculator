@@ -198,6 +198,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 							if len(results)%10 == 0 {
 								log.Printf("[INFO] Results found: %d\n", len(results))
 								if len(results) > int(10*opts.topResultsToShow) {
+									log.Printf("[INFO] found 10x similar results, leaving serch")
 									return &results // enough results found
 								}
 							}
@@ -228,11 +229,13 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 				}
 
 				if len(results) >= int(opts.topResultsToShow) {
+					log.Printf("[INFO] found enough best results, leaving search")
 					return &results // enough results found
 				}
 			}
 		}
 	}
+	log.Printf("[INFO] all combinations checked")
 	return &results
 }
 
