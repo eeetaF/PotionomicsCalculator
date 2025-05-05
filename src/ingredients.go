@@ -65,6 +65,7 @@ var Ingredients = []Ingredient{
 	// Fruit
 	{[5]uint16{6, 0, 0, 0, 0}, Fruit, "Feyberry", 4, []TraitStruct{}},
 	{[5]uint16{18, 0, 0, 0, 0}, Fruit, "Puckberry", 16, []TraitStruct{}},
+	{[5]uint16{0, 18, 6, 0, 0}, Fruit, "Figment Pomme", 26, []TraitStruct{}},
 	{[5]uint16{30, 0, 0, 0, 0}, Fruit, "Bogeyberry", 30, []TraitStruct{}},
 	{[5]uint16{0, 0, 0, 40, 0}, Fruit, "Saltwatermelon", 44, []TraitStruct{
 		{Visual, false}}},
