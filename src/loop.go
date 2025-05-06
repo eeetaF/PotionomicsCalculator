@@ -8,7 +8,7 @@ import (
 )
 
 func MainLoop() {
-	var minMags, maxMags, minIngr, maxIngr, topResultsToShow uint16
+	var minMags, maxMags, minIngr, maxIngr, topResultsToShow int
 	var taste, sensation, aroma, visual, sound int8
 	var desiredPotions string
 	for {
@@ -39,18 +39,21 @@ func MainLoop() {
 		start := time.Now()
 
 		searchResult := SearchPerfectCombosByParams(&SearchOpts{
-			minMags:          minMags,
-			maxMags:          maxMags,
-			minIngr:          minIngr,
-			maxIngr:          maxIngr,
-			topResultsToShow: topResultsToShow,
+			minMags:          uint16(min(minMags, 65535)),
+			maxMags:          uint16(min(maxMags, 65535)),
+			minIngr:          uint16(min(minIngr, 65535)),
+			maxIngr:          uint16(min(maxIngr, 65535)),
+			topResultsToShow: uint16(min(topResultsToShow, 65535)),
 			desiredPotions:   goodPotions,
 			traits:           [5]int8{taste, sensation, aroma, visual, sound},
 		})
 
-		SortAndFilterSearchResult(searchResult, topResultsToShow)
+		SortAndFilterSearchResult(searchResult, uint16(min(topResultsToShow, 65535)))
 
 		PrintWithBufio(fmt.Sprintf("\nSearch took: %s\n", time.Since(start).String()))
+		PrintWithBufio("----------------------\n")
+
 		run(searchResult)
+		// todo improve searcher: don't fix numIngreds and numMags
 	}
 }

@@ -5,11 +5,11 @@ import (
 	"sort"
 )
 
-const MaxSearchResults = 200
+const MaxSearchResults = 65535
 
 type SearchResult struct {
 	ResultingPotion Potion
-	Ingredients     []IngredientWithQuantity
+	Ingredients     *[]IngredientWithQuantity
 	TotalMagimints  uint16
 	NumberIngreds   uint16
 	Traits          []TraitStruct
@@ -37,7 +37,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 	opts.minIngr = max(opts.minIngr, 1)
 
 	// these vars are used in calculations. All of them are being constantly reused.
-	var result, lastI byte
+	var result, lastI, j byte
 	var i, newTotalMags, delim, minMagsLocal, maxMagsLocal, numMags, numIngreds, ingredsToAdd, lenLocalMagsSlice uint16
 	var isLastI, isLastJ bool
 	var newMags [5]uint16
@@ -65,13 +65,10 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 		lenLocalMagsSlice = (maxMagsLocal-minMagsLocal)/delim + 1
 		localMagsSlice = make([]*[5]uint16, 0, lenLocalMagsSlice)
 		for i = range lenLocalMagsSlice {
-			localMagsSlice = append(localMagsSlice, &[5]uint16{
-				pot.mags[0] * (minMagsLocal/delim + i),
-				pot.mags[1] * (minMagsLocal/delim + i),
-				pot.mags[2] * (minMagsLocal/delim + i),
-				pot.mags[3] * (minMagsLocal/delim + i),
-				pot.mags[4] * (minMagsLocal/delim + i),
-			})
+			localMagsSlice = append(localMagsSlice, &[5]uint16{})
+			for j = range lastI + 1 {
+				localMagsSlice[i][j] = pot.mags[j] * (minMagsLocal/delim + i)
+			}
 		}
 
 		for numIngreds = opts.maxIngr; numIngreds >= opts.minIngr; numIngreds-- { // loop - ingredients
@@ -134,12 +131,9 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 							continue
 						}
 
-						newMags = [5]uint16{
-							cu.mags[0] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[0],
-							cu.mags[1] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[1],
-							cu.mags[2] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[2],
-							cu.mags[3] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[3],
-							cu.mags[4] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[4],
+						newMags = [5]uint16{}
+						for j = range lastI + 1 {
+							newMags[j] = cu.mags[j] + ingredsToAdd*localIngredsByMags[cu.i][cu.j].mags[j]
 						}
 
 						// 0 - default, 1 - bad, 2 - mag finished, 3 - good. IMPORTANT: regards only mags. Not traits / numIngreds etc.
@@ -202,8 +196,9 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 								Traits:          trts,
 							})
 							if len(results)%10 == 0 {
-								log.Printf("[INFO] Found %d results\n", len(results))
+								log.Printf("[INFO] Results found: %d\n", len(results))
 								if len(results) > int(10*opts.topResultsToShow) {
+									log.Printf("[INFO] found 10x similar results, leaving serch")
 									return &results // enough results found
 								}
 							}
@@ -234,15 +229,17 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 				}
 
 				if len(results) >= int(opts.topResultsToShow) {
+					log.Printf("[INFO] found enough best results, leaving search")
 					return &results // enough results found
 				}
 			}
 		}
 	}
+	log.Printf("[INFO] all combinations checked")
 	return &results
 }
 
-func usedIngredientsToSortedIngredients(ings *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) []IngredientWithQuantity {
+func usedIngredientsToSortedIngredients(ings *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) *[]IngredientWithQuantity {
 	newIngs := make([]IngredientWithQuantity, 0, len(*ings))
 
 	sort.Slice(*ings, func(i, j int) bool {
@@ -259,7 +256,7 @@ func usedIngredientsToSortedIngredients(ings *[]usedIngredient, localIngredsByMa
 			Ingredient: Ingredients[localIngredsByMags[ingUsed.i][ingUsed.j].id],
 		})
 	}
-	return newIngs
+	return &newIngs
 }
 
 func getTraits(ingredsUsed *[]usedIngredient, localIngredsByMags *[5][]ingredientDuringSearch) [5]int8 {
@@ -354,14 +351,13 @@ func getIngredientDuringSearch(p *potionForSearch, traits *[5]int8) *[5][]ingred
 				continue
 			}
 			// ingred is good, can be added
-			ingDuringSearch := ingredientDuringSearch{
+			ingredientsByMags[i] = append(ingredientsByMags[i], ingredientDuringSearch{
 				id:                ingred.id,
 				traits:            ingred.traits,
 				mags:              ingred.mags,
 				totalMags:         ingred.totalMags,
 				quantityAvailable: ingred.quantityAvailable,
-			}
-			ingredientsByMags[i] = append(ingredientsByMags[i], ingDuringSearch)
+			})
 		}
 	}
 	return &ingredientsByMags
