@@ -51,6 +51,9 @@ func MainLoop() {
 		SortAndFilterSearchResult(searchResult, uint16(min(topResultsToShow, 65535)))
 
 		PrintWithBufio(fmt.Sprintf("\nSearch took: %s\n", time.Since(start).String()))
+		PrintWithBufio("----------------------\n")
+
 		run(searchResult)
+		// todo improve searcher: don't fix numIngreds and numMags
 	}
 }
