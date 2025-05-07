@@ -29,6 +29,8 @@ var Ingredients = []Ingredient{
 	{[5]uint16{15, 15, 15, 15, 0}, Slime, "Copper Dollop", 95, []TraitStruct{}},
 	{[5]uint16{0, 0, 44, 0, 22}, Slime, "Bedazzled Custard", 95, []TraitStruct{
 		{Visual, true}}},
+	{[5]uint16{0, 0, 0, 66, 0}, Slime, "Winged Gelatin", 103, []TraitStruct{
+		{Sensation, true}, {Aroma, false}}},
 	{[5]uint16{24, 24, 24, 24, 0}, Slime, "Silver Dollop", 138, []TraitStruct{}},
 	{[5]uint16{33, 33, 33, 33, 0}, Slime, "Gold Dollop", 176, []TraitStruct{}},
 
@@ -41,9 +43,9 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 30, 0, 0, 0}, Plant, "Mandragon Root", 34, []TraitStruct{}},
 	{[5]uint16{0, 48, 0, 0, 0}, Plant, "Acid Rutabaga", 54, []TraitStruct{
 		{Taste, false}, {Sound, true}}},
-	{[5]uint16{0, 44, 0, 44, 0}, Plant, "Widowmaker Pepper", 999999, []TraitStruct{}},
 	{[5]uint16{0, 32, 0, 32, 0}, Plant, "Daredevil Pepper", 90, []TraitStruct{}},
 	{[5]uint16{10, 0, 20, 0, 30}, Plant, "Mosquito Plant", 105, []TraitStruct{}},
+	{[5]uint16{0, 44, 0, 44, 0}, Plant, "Widowmaker Pepper", 126, []TraitStruct{}},
 	{[5]uint16{20, 20, 15, 0, 15}, Plant, "Squid Vine", 135, []TraitStruct{}},
 	{[5]uint16{16, 0, 40, 0, 40}, Plant, "Acid Pitfall Plant", 145, []TraitStruct{}},
 	{[5]uint16{24, 24, 24, 0, 24}, Plant, "Harpy's Snare", 150, []TraitStruct{}},
@@ -159,7 +161,11 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 0, 0, 0, 32}, Fish, "Crag Crab", 75, []TraitStruct{
 		{Aroma, true}}},
 	{[5]uint16{24, 24, 24, 0, 0}, Fish, "Hangman Eel", 95, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 0, 44}, Fish, "Blackfrost Lobster", 104, []TraitStruct{
+		{Aroma, true}}},
 	{[5]uint16{96, 0, 48, 0, 0}, Fish, "Buoyant Blowfish", 138, []TraitStruct{
+		{Visual, false}, {Sound, false}}},
+	{[5]uint16{132, 0, 66, 0, 0}, Fish, "Icicle Pufferfish", 210, []TraitStruct{
 		{Visual, false}, {Sound, false}}},
 
 	// Flesh
@@ -191,8 +197,9 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 30, 0, 0, 10}, Bone, "Barghast Canine", 55, []TraitStruct{}},
 	{[5]uint16{0, 0, 64, 0, 0}, Bone, "Silver Stag Antler", 72, []TraitStruct{
 		{Taste, false}}},
-	{[5]uint16{0, 48, 0, 0, 16}, Bone, "Naga's Fang", 98, []TraitStruct{
+	{[5]uint16{0, 48, 0, 0, 16}, Bone, "Naga's Fa	ng", 98, []TraitStruct{
 		{Sensation, false}, {Sound, true}}},
+	{[5]uint16{0, 0, 55, 55, 22}, Bone, "Draugr's Tibia", 184, []TraitStruct{}},
 	{[5]uint16{0, 0, 40, 40, 16}, Bone, "Stalking Skeleton's Fibula", 150, []TraitStruct{}},
 
 	// Mineral
@@ -216,12 +223,12 @@ var Ingredients = []Ingredient{
 	{[5]uint16{20, 0, 20, 0, 0}, Essence, "Nessie Pheromones", 50, []TraitStruct{}},
 	{[5]uint16{0, 10, 12, 18, 0}, Essence, "Raven's Shadow", 52, []TraitStruct{}},
 	{[5]uint16{0, 0, 30, 10, 0}, Essence, "Raiju Droppings", 55, []TraitStruct{}},
-	{[5]uint16{0, 33, 33, 11, 0}, Essence, "Dragon Tear", 999999, []TraitStruct{
-		{Sensation, true}}},
 	{[5]uint16{32, 0, 32, 0, 0}, Essence, "Ogre's Shadow", 74, []TraitStruct{}},
 	{[5]uint16{0, 0, 30, 20, 10}, Essence, "Dropspider's Shadow", 90, []TraitStruct{}},
 	{[5]uint16{0, 0, 64, 32, 0}, Essence, "Chimera Waste", 118, []TraitStruct{
 		{Aroma, false}}},
+	{[5]uint16{0, 33, 33, 11, 0}, Essence, "Dragon Tear", 118, []TraitStruct{
+		{Sensation, true}}},
 	{[5]uint16{0, 48, 32, 16, 0}, Essence, "Bioplasm", 125, []TraitStruct{
 		{Visual, false}, {Sound, true}}},
 	{[5]uint16{0, 55, 55, 22, 0}, Essence, "Xenoplasm", 166, []TraitStruct{
@@ -238,9 +245,10 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 0, 0, 32, 0}, Gem, "Lustrous Pearl", 60, []TraitStruct{
 		{Visual, true}}},
 	{[5]uint16{30, 10, 20, 0, 0}, Gem, "Thunder Quartz", 72, []TraitStruct{}},
-	{[5]uint16{0, 32, 32, 0, 0}, Gem, "Griffin's-Whetstone Diamond", 86, []TraitStruct{}},
-	{[5]uint16{0, 0, 0, 44, 0}, Gem, "Dragonfire Pearl", 9999999, []TraitStruct{
+	{[5]uint16{0, 0, 0, 44, 0}, Gem, "Dragonfire Pearl", 76, []TraitStruct{
 		{Visual, true}}},
+	{[5]uint16{0, 32, 32, 0, 0}, Gem, "Griffin's-Whetstone Diamond", 86, []TraitStruct{}},
+	{[5]uint16{0, 44, 44, 0, 0}, Gem, "Direwolf's-Breath Diamond", 118, []TraitStruct{}},
 	{[5]uint16{64, 48, 0, 32, 0}, Gem, "Poison Quartz", 185, []TraitStruct{
 		{Sound, false}}},
 
@@ -262,6 +270,8 @@ var Ingredients = []Ingredient{
 	// Pure Mana
 	{[5]uint16{15, 15, 15, 15, 15}, PureMana, "Mote of Mana", 130, []TraitStruct{}},
 	{[5]uint16{24, 24, 24, 24, 24}, PureMana, "Ember of Mana", 165, []TraitStruct{}},
+	{[5]uint16{50, 40, 30, 20, 10}, PureMana, "Mana Blaze", 234, []TraitStruct{
+		{Sensation, true}, {Aroma, true}}},
 }
 
 type IngredientCategory byte

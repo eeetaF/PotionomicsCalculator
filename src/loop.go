@@ -22,6 +22,7 @@ func MainLoop() {
 		fmt.Fscan(In, &desiredPotions)
 		PrintWithBufio("Enter traits (Taste, Sensation, Aroma, Visual, Sound) 1 for good only, 0 excludes bad, -1 for all: ")
 		fmt.Fscan(In, &taste, &sensation, &aroma, &visual, &sound)
+		PrintWithBufio("----------------------\n")
 		log.Println("Starting search...")
 		desiredPotionsSlc := strings.Split(desiredPotions, "_")
 		goodPotions := make([]string, 0, len(desiredPotionsSlc))

@@ -37,6 +37,7 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 	opts.minIngr = max(opts.minIngr, 1)
 
 	// these vars are used in calculations. All of them are being constantly reused.
+	printThreshold := 1
 	var result, lastI, j byte
 	var i, newTotalMags, delim, minMagsLocal, maxMagsLocal, numMags, numIngreds, ingredsToAdd, lenLocalMagsSlice uint16
 	var isLastI, isLastJ bool
@@ -195,10 +196,14 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 								NumberIngreds:   numIngreds,
 								Traits:          trts,
 							})
-							if len(results)%10 == 0 {
-								log.Printf("[INFO] Results found: %d\n", len(results))
+							if len(results)%printThreshold == 0 {
+								if len(results) == printThreshold*10 {
+									printThreshold *= 10
+								}
+								log.Printf("[INFO] Recipes found: %d\n", len(results))
 								if len(results) > int(10*opts.topResultsToShow) {
-									log.Printf("[INFO] found 10x similar results, leaving serch")
+									log.Printf("[INFO] found 10x similar recipes, leaving serch")
+									log.Printf("[RSLT] Total recipes found: %d", len(results))
 									return &results // enough results found
 								}
 							}
@@ -229,13 +234,15 @@ func SearchPerfectCombosByParams(opts *SearchOpts) *[]*SearchResult {
 				}
 
 				if len(results) >= int(opts.topResultsToShow) {
-					log.Printf("[INFO] found enough best results, leaving search")
-					return &results // enough results found
+					log.Printf("[INFO] found enough best recipes, leaving search")
+					log.Printf("[RSLT] Total recipes found: %d", len(results))
+					return &results // enough recipes found
 				}
 			}
 		}
 	}
 	log.Printf("[INFO] all combinations checked")
+	log.Printf("[RSLT] Total recipes found: %d", len(results))
 	return &results
 }
 
