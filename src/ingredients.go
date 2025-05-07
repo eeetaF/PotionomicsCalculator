@@ -197,7 +197,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 30, 0, 0, 10}, Bone, "Barghast Canine", 55, []TraitStruct{}},
 	{[5]uint16{0, 0, 64, 0, 0}, Bone, "Silver Stag Antler", 72, []TraitStruct{
 		{Taste, false}}},
-	{[5]uint16{0, 48, 0, 0, 16}, Bone, "Naga's Fa	ng", 98, []TraitStruct{
+	{[5]uint16{0, 48, 0, 0, 16}, Bone, "Naga's Fang", 98, []TraitStruct{
 		{Sensation, false}, {Sound, true}}},
 	{[5]uint16{0, 0, 55, 55, 22}, Bone, "Draugr's Tibia", 184, []TraitStruct{}},
 	{[5]uint16{0, 0, 40, 40, 16}, Bone, "Stalking Skeleton's Fibula", 150, []TraitStruct{}},
