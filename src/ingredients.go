@@ -31,6 +31,7 @@ var Ingredients = []Ingredient{
 		{Visual, true}}},
 	{[5]uint16{0, 0, 0, 66, 0}, Slime, "Winged Gelatin", 103, []TraitStruct{
 		{Sensation, true}, {Aroma, false}}},
+	{[5]uint16{44, 0, 0, 44, 0}, Slime, "Armored Pudding", 115, []TraitStruct{}},
 	{[5]uint16{24, 24, 24, 24, 0}, Slime, "Silver Dollop", 138, []TraitStruct{}},
 	{[5]uint16{33, 33, 33, 33, 0}, Slime, "Gold Dollop", 176, []TraitStruct{}},
 
@@ -43,6 +44,8 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 30, 0, 0, 0}, Plant, "Mandragon Root", 34, []TraitStruct{}},
 	{[5]uint16{0, 48, 0, 0, 0}, Plant, "Acid Rutabaga", 54, []TraitStruct{
 		{Taste, false}, {Sound, true}}},
+	{[5]uint16{0, 66, 0, 0, 0}, Plant, "Cosmic Cassava", 82, []TraitStruct{
+		{Taste, false}, {Sound, true}}},
 	{[5]uint16{0, 32, 0, 32, 0}, Plant, "Daredevil Pepper", 90, []TraitStruct{}},
 	{[5]uint16{10, 0, 20, 0, 30}, Plant, "Mosquito Plant", 105, []TraitStruct{}},
 	{[5]uint16{0, 44, 0, 44, 0}, Plant, "Widowmaker Pepper", 126, []TraitStruct{}},
@@ -50,6 +53,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{16, 0, 40, 0, 40}, Plant, "Acid Pitfall Plant", 145, []TraitStruct{}},
 	{[5]uint16{24, 24, 24, 0, 24}, Plant, "Harpy's Snare", 150, []TraitStruct{}},
 	{[5]uint16{22, 0, 55, 0, 55}, Plant, "Barracuda Plant", 172, []TraitStruct{}},
+	{[5]uint16{33, 33, 33, 0, 33}, Plant, "Death's Embrace", 196, []TraitStruct{}},
 
 	// Flower
 	{[5]uint16{4, 0, 0, 0, 0}, Flower, "Fairy Flower Bulb", 14, []TraitStruct{
@@ -108,9 +112,12 @@ var Ingredients = []Ingredient{
 		{Sensation, true}}},
 	{[5]uint16{0, 0, 48, 0, 0}, Fungus, "Delirium Shroom", 63, []TraitStruct{
 		{Taste, true}, {Sound, false}}},
+	{[5]uint16{66, 0, 0, 0, 0}, Fungus, "Pandemonium Shroom", 72, []TraitStruct{
+		{Taste, true}, {Sound, false}}},
 	{[5]uint16{16, 0, 0, 0, 48}, Fungus, "Creeping Mildew", 92, []TraitStruct{}},
 	{[5]uint16{0, 48, 0, 16, 0}, Fungus, "Medusa Spore", 94, []TraitStruct{
 		{Taste, false}, {Aroma, true}}},
+	{[5]uint16{22, 0, 0, 0, 66}, Fungus, "Stalking Mold", 123, []TraitStruct{}},
 	{[5]uint16{32, 64, 64, 32, 0}, Fungus, "Shallow Grave Enoki", 200, []TraitStruct{
 		{Sensation, false}, {Aroma, false}}},
 
@@ -163,6 +170,7 @@ var Ingredients = []Ingredient{
 	{[5]uint16{24, 24, 24, 0, 0}, Fish, "Hangman Eel", 95, []TraitStruct{}},
 	{[5]uint16{0, 0, 0, 0, 44}, Fish, "Blackfrost Lobster", 104, []TraitStruct{
 		{Aroma, true}}},
+	{[5]uint16{33, 33, 33, 0, 0}, Fish, "Guillotine Eel", 126, []TraitStruct{}},
 	{[5]uint16{96, 0, 48, 0, 0}, Fish, "Buoyant Blowfish", 138, []TraitStruct{
 		{Visual, false}, {Sound, false}}},
 	{[5]uint16{132, 0, 66, 0, 0}, Fish, "Icicle Pufferfish", 210, []TraitStruct{
@@ -225,14 +233,20 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 0, 30, 10, 0}, Essence, "Raiju Droppings", 55, []TraitStruct{}},
 	{[5]uint16{32, 0, 32, 0, 0}, Essence, "Ogre's Shadow", 74, []TraitStruct{}},
 	{[5]uint16{0, 0, 30, 20, 10}, Essence, "Dropspider's Shadow", 90, []TraitStruct{}},
+	{[5]uint16{0, 0, 0, 0, 64}, Essence, "Owlbear Pheromones", 90, []TraitStruct{
+		{Aroma, false}}},
 	{[5]uint16{0, 0, 64, 32, 0}, Essence, "Chimera Waste", 118, []TraitStruct{
 		{Aroma, false}}},
 	{[5]uint16{0, 33, 33, 11, 0}, Essence, "Dragon Tear", 118, []TraitStruct{
 		{Sensation, true}}},
 	{[5]uint16{0, 48, 32, 16, 0}, Essence, "Bioplasm", 125, []TraitStruct{
 		{Visual, false}, {Sound, true}}},
+	{[5]uint16{0, 0, 0, 0, 88}, Essence, "Dragon Pheromones", 151, []TraitStruct{
+		{Aroma, false}}},
 	{[5]uint16{0, 55, 55, 22, 0}, Essence, "Xenoplasm", 166, []TraitStruct{
 		{Visual, false}, {Sound, true}}},
+	{[5]uint16{0, 0, 88, 44, 0}, Essence, "Dragon Dung", 173, []TraitStruct{
+		{Aroma, false}}},
 
 	// Gem
 	{[5]uint16{0, 4, 4, 0, 0}, Gem, "Pixiedust Diamond", 14, []TraitStruct{}},
@@ -264,14 +278,19 @@ var Ingredients = []Ingredient{
 	{[5]uint16{0, 32, 64, 0, 0}, Ore, "Weeping Metal Ore", 66, []TraitStruct{
 		{Sensation, false}}},
 	{[5]uint16{30, 10, 0, 0, 20}, Ore, "Malachite Ore", 93, []TraitStruct{}},
+	{[5]uint16{64, 48, 0, 0, 32}, Ore, "Lazuli Ore", 174, []TraitStruct{
+		{Sound, false}}},
 	{[5]uint16{66, 66, 0, 0, 33}, Ore, "Amethyst Ore", 206, []TraitStruct{
 		{Sound, false}}},
 
 	// Pure Mana
 	{[5]uint16{15, 15, 15, 15, 15}, PureMana, "Mote of Mana", 130, []TraitStruct{}},
 	{[5]uint16{24, 24, 24, 24, 24}, PureMana, "Ember of Mana", 165, []TraitStruct{}},
+	{[5]uint16{33, 33, 33, 33, 33}, PureMana, "Spark of Mana", 215, []TraitStruct{}},
 	{[5]uint16{50, 40, 30, 20, 10}, PureMana, "Mana Blaze", 234, []TraitStruct{
 		{Sensation, true}, {Aroma, true}}},
+	{[5]uint16{35, 45, 55, 65, 75}, PureMana, "Mana Conflagration", 316, []TraitStruct{
+		{Aroma, false}, {Visual, false}}},
 }
 
 type IngredientCategory byte

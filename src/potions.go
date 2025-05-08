@@ -10,6 +10,16 @@ type PotionSearch struct {
 	Magimints [5]uint16
 }
 
+// todo display potion stars and sizes based on these thresholds
+// potions thresholds:
+// 	size:		star1		star2		star3		star4		star5		star6
+//	minor:	 	0-9, 		10-19, 		20-29, 		30-39, 		40-49,		50-59
+//	common: 	60-74, 		75-89, 		90-104, 	105-114,	115-129,	130-149
+//	greater:	150-169,	170-194,	195-214,	215-234,	235-259,	260-289
+// 	grand:		290-314,	315-344,	345-369,	370-399,	400-429,	430-469
+// 	superior:	470-504,	505-544,	545-579,	580-619,	620-659,	660-719
+// 	masterwork:	720-
+
 var Potions = []Potion{
 	// Potions
 	{[5]uint16{1, 1, 0, 0, 0}, PPT, "Health"},
